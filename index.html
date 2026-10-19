@@ -3,18 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Craft PRO - Generador de Códigos QR</title>
+  <title>Generador de Códigos QR - Genera-tu-QR</title>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <style>
     :root {
-      --bg-page: #f8fafc;
-      --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-muted: #64748b;
+      --bg-page: #0f172a;
+      --card-bg: #1e293b;
+      --card-inner: #0f172a;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
       --accent: #2563eb;
       --accent-hover: #1d4ed8;
-      --border: #e2e8f0;
-      --radius: 12px;
+      --border: #334155;
+      --radius: 16px;
     }
 
     body {
@@ -23,6 +24,8 @@
       background: var(--bg-page);
       color: var(--text-main);
       padding: 24px;
+      min-height: 100vh;
+      box-sizing: border-box;
     }
 
     .header {
@@ -40,11 +43,11 @@
     }
 
     .brand-logo {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       background: var(--accent);
       color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -52,12 +55,11 @@
       font-size: 1.2rem;
     }
 
-    /* Layout Principal de 2 Columnas */
     .dashboard {
       max-width: 1200px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 400px;
+      grid-template-columns: 1fr 420px;
       gap: 24px;
     }
 
@@ -65,26 +67,26 @@
       .dashboard { grid-template-columns: 1fr; }
     }
 
-    /* Panel de Opciones (Acordeón) */
     .panel {
       background: var(--card-bg);
       border-radius: var(--radius);
       border: 1px solid var(--border);
       padding: 20px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
     }
 
     .accordion-item {
       border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 12px;
+      border-radius: 10px;
+      margin-bottom: 14px;
       overflow: hidden;
+      background: var(--card-inner);
     }
 
     .accordion-header {
       width: 100%;
       padding: 14px 16px;
-      background: #f1f5f9;
+      background: #1e293b;
       border: none;
       text-align: left;
       font-weight: 600;
@@ -98,7 +100,6 @@
 
     .accordion-content {
       padding: 16px;
-      background: var(--card-bg);
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -117,8 +118,10 @@
     input[type="text"], input[type="url"], select {
       width: 100%;
       padding: 10px 12px;
-      border-radius: 6px;
+      border-radius: 8px;
       border: 1px solid var(--border);
+      background: #1e293b;
+      color: white;
       box-sizing: border-box;
       font-size: 0.9rem;
     }
@@ -129,13 +132,12 @@
       gap: 10px;
     }
 
-    /* Panel de Vista Previa Fijo */
     .preview-card {
       background: var(--card-bg);
       border-radius: var(--radius);
       border: 1px solid var(--border);
       padding: 24px;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
       position: sticky;
       top: 24px;
       display: flex;
@@ -148,7 +150,6 @@
       background: #ffffff;
       padding: 20px;
       border-radius: 12px;
-      border: 2px dashed var(--border);
       margin: 16px 0;
       display: flex;
       justify-content: center;
@@ -173,7 +174,7 @@
 
     .btn-secondary {
       width: 100%;
-      background: #e2e8f0;
+      background: #334155;
       color: var(--text-main);
       border: none;
       padding: 10px;
@@ -182,131 +183,162 @@
       cursor: pointer;
       margin-top: 6px;
     }
+
+    .redirecting {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80vh;
+      text-align: center;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border);
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="brand">
-      <div class="brand-logo">QR</div>
-      <div>
-        <h2 style="margin: 0;">QR Craft PRO</h2>
-        <span style="font-size: 0.8rem; color: var(--text-muted);">Generador Todo-en-Uno</span>
-      </div>
-    </div>
+  <!-- Vista de Redirección Automática -->
+  <div id="redirect-view" class="redirecting" style="display: none;">
+    <div class="spinner"></div>
+    <h2 id="redirect-status">Redirigiendo a tu destino...</h2>
   </div>
 
-  <div class="dashboard">
-
-    <!-- LADO IZQUIERDO: OPCIONES TODAS EN UN SOLO LUGAR -->
-    <div class="panel">
-      
-      <!-- Seccion 1: Contenido -->
-      <div class="accordion-item">
-        <div class="accordion-header">1. Contenido y Tipo de QR</div>
-        <div class="accordion-content">
-          <label>Tipo de Código QR</label>
-          <select id="qr-type" onchange="toggleType()">
-            <option value="dynamic" selected>Dinámico (Redireccionable con Google Sheets)</option>
-            <option value="static">Estático (Enlace Directo)</option>
-          </select>
-
-          <label>URL de Destino Real *</label>
-          <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Oscar-Mancia-blog/">
-
-          <div id="dynamic-fields">
-            <label>ID Único del QR</label>
-            <input type="text" id="qr-id" placeholder="Ej: mi_qr_01">
-
-            <label>URL de Google Apps Script (Backend)</label>
-            <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
-          </div>
+  <!-- Vista Principal -->
+  <div id="app-view">
+    <div class="header">
+      <div class="brand">
+        <div class="brand-logo">QR</div>
+        <div>
+          <h2 style="margin: 0;">Genera-tu-QR</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Generador de Códigos QR Estáticos y Dinámicos</span>
         </div>
       </div>
+    </div>
 
-      <!-- Seccion 2: Colores y Puntos -->
-      <div class="accordion-item">
-        <div class="accordion-header">2. Colores y Estilo de Puntos</div>
-        <div class="accordion-content">
-          <div class="grid-2">
-            <div>
-              <label>Color Principal</label>
-              <input type="color" id="color-dots" value="#0f172a" style="width:100%; height:40px; cursor:pointer;" onchange="updateQR()">
-            </div>
-            <div>
-              <label>Color Fondo</label>
-              <input type="color" id="color-bg" value="#ffffff" style="width:100%; height:40px; cursor:pointer;" onchange="updateQR()">
+    <div class="dashboard">
+
+      <!-- PANEL IZQUIERDO: CONFIGURACIONES -->
+      <div class="panel">
+        
+        <!-- Seccion 1: Contenido -->
+        <div class="accordion-item">
+          <div class="accordion-header">1. Contenido y Tipo de QR</div>
+          <div class="accordion-content">
+            <label>Tipo de Código QR</label>
+            <select id="qr-type" onchange="toggleType(); updateQR();">
+              <option value="dynamic" selected>Dinámico (Gestionado por Google Sheets)</option>
+              <option value="static">Estático (Enlace Directo)</option>
+            </select>
+
+            <label>URL de Destino Real *</label>
+            <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/" oninput="updateQR()">
+
+            <div id="dynamic-fields">
+              <label>ID Único del QR Dinámico</label>
+              <input type="text" id="qr-id" placeholder="Ej: mi_qr_01" oninput="updateQR()">
+
+              <label>URL de Google Apps Script (Backend)</label>
+              <input type="text" id="script-url" value="https://script.google.com/macros/s/AKfycbzFcu4eujBiIaz12G3bvQSV-p-LJmpNv81TWIMUY9NhTIDwJoT7CcVorExwRcnIpg-fuA/exec">
             </div>
           </div>
-
-          <label>Estilo de Módulos (Puntos)</label>
-          <select id="dots-style" onchange="updateQR()">
-            <option value="square">Cuadrado</option>
-            <option value="dots">Puntos Redondos</option>
-            <option value="rounded" selected>Redondeado</option>
-            <option value="classy">Elegante</option>
-            <option value="extra-rounded">Suave</option>
-          </select>
         </div>
+
+        <!-- Seccion 2: Colores y Puntos -->
+        <div class="accordion-item">
+          <div class="accordion-header">2. Colores y Estilo de Puntos</div>
+          <div class="accordion-content">
+            <div class="grid-2">
+              <div>
+                <label>Color Principal</label>
+                <input type="color" id="color-dots" value="#2563eb" style="width:100%; height:40px; cursor:pointer;" onchange="updateQR()">
+              </div>
+              <div>
+                <label>Color Fondo</label>
+                <input type="color" id="color-bg" value="#ffffff" style="width:100%; height:40px; cursor:pointer;" onchange="updateQR()">
+              </div>
+            </div>
+
+            <label>Estilo de Módulos (Puntos)</label>
+            <select id="dots-style" onchange="updateQR()">
+              <option value="square">Cuadrado</option>
+              <option value="dots">Puntos Redondos</option>
+              <option value="rounded" selected>Redondeado</option>
+              <option value="classy">Elegante</option>
+              <option value="extra-rounded">Suave</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Seccion 3: Esquinas -->
+        <div class="accordion-item">
+          <div class="accordion-header">3. Marcos y Esquinas</div>
+          <div class="accordion-content">
+            <label>Marco Exterior (Eye Frame)</label>
+            <select id="corner-square" onchange="updateQR()">
+              <option value="square">Cuadrado</option>
+              <option value="extra-rounded" selected>Redondeado</option>
+            </select>
+
+            <label>Centro Interior (Eye Ball)</label>
+            <select id="corner-dot" onchange="updateQR()">
+              <option value="square">Cuadrado</option>
+              <option value="dot" selected>Círculo</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Seccion 4: Logo -->
+        <div class="accordion-item">
+          <div class="accordion-header">4. Logo Central y Calidad</div>
+          <div class="accordion-content">
+            <label>Subir Logo (PNG / JPG)</label>
+            <input type="file" id="logo-input" accept="image/*" onchange="handleLogo(event)">
+
+            <label>Corrección de Errores (ECC)</label>
+            <select id="ecc-level" onchange="updateQR()">
+              <option value="L">L - Bajo (7%)</option>
+              <option value="M">M - Medio (15%)</option>
+              <option value="Q" selected>Q - Alto (25%)</option>
+              <option value="H">H - Máximo (30%)</option>
+            </select>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Seccion 3: Esquinas -->
-      <div class="accordion-item">
-        <div class="accordion-header">3. Marcos y Esquinas</div>
-        <div class="accordion-content">
-          <label>Marco Exterior (Eye Frame)</label>
-          <select id="corner-square" onchange="updateQR()">
-            <option value="square">Cuadrado</option>
-            <option value="extra-rounded" selected>Redondeado</option>
-          </select>
-
-          <label>Centro Interior (Eye Ball)</label>
-          <select id="corner-dot" onchange="updateQR()">
-            <option value="square">Cuadrado</option>
-            <option value="dot" selected>Círculo</option>
-          </select>
+      <!-- PANEL DERECHO: VISTA PREVIA Y ACCIONES -->
+      <div class="preview-card">
+        <h3 style="margin: 0;">Vista Previa</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;" id="encoded-info"></p>
+        
+        <div class="qr-container">
+          <div id="qrcode"></div>
         </div>
-      </div>
 
-      <!-- Seccion 4: Logo -->
-      <div class="accordion-item">
-        <div class="accordion-header">4. Logo Central y Calidad</div>
-        <div class="accordion-content">
-          <label>Subir Logo (PNG / JPG)</label>
-          <input type="file" id="logo-input" accept="image/*" onchange="handleLogo(event)">
-
-          <label>Corrección de Errores (ECC)</label>
-          <select id="ecc-level" onchange="updateQR()">
-            <option value="L">L - Bajo (7%)</option>
-            <option value="M">M - Medio (15%)</option>
-            <option value="Q" selected>Q - Alto (25%)</option>
-            <option value="H">H - Máximo (30%)</option>
-          </select>
+        <button class="btn-primary" onclick="saveAndGenerate()">Guardar y Generar QR</button>
+        
+        <div class="grid-2" style="width: 100%; margin-top: 8px;">
+          <button class="btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
+          <button class="btn-secondary" onclick="downloadQR('svg')">Descargar SVG</button>
         </div>
       </div>
 
     </div>
-
-    <!-- LADO DERECHO: VISTA PREVIA SIEMPRE VISIBLE -->
-    <div class="preview-card">
-      <h3 style="margin: 0;">Vista Previa</h3>
-      
-      <div class="qr-container">
-        <div id="qrcode"></div>
-      </div>
-
-      <button class="btn-primary" onclick="saveAndGenerate()">Guardar y Generar QR</button>
-      
-      <div class="grid-2" style="width: 100%; margin-top: 8px;">
-        <button class="btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
-        <button class="btn-secondary" onclick="downloadQR('svg')">Descargar SVG</button>
-      </div>
-    </div>
-
   </div>
 
   <script>
-    const BASE_GITHUB_URL = "https://oscardavidmanciarivera-create.github.io/Oscar-Mancia-blog/";
+    const BASE_GITHUB_URL = "https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/";
     let logoDataUrl = "";
 
     const qrCode = new QRCodeStyling({
@@ -314,7 +346,7 @@
       height: 240,
       type: "svg",
       data: BASE_GITHUB_URL,
-      dotsOptions: { color: "#0f172a", type: "rounded" },
+      dotsOptions: { color: "#2563eb", type: "rounded" },
       backgroundOptions: { color: "#ffffff" },
       cornersSquareOptions: { type: "extra-rounded" },
       cornersDotOptions: { type: "dot" }
@@ -322,9 +354,36 @@
 
     qrCode.append(document.getElementById("qrcode"));
 
-    // Autocompletar datos guardados
-    document.getElementById("script-url").value = localStorage.getItem("script_url") || "";
+    // Autocompletar ID aleatorio al iniciar
     document.getElementById("qr-id").value = "qr_" + Math.random().toString(36).substring(2, 7);
+
+    // Detectar si alguien escaneó el QR (?r=ID)
+    window.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrId = urlParams.get("r");
+
+      if (qrId) {
+        document.getElementById("app-view").style.display = "none";
+        document.getElementById("redirect-view").style.display = "flex";
+
+        const scriptUrl = document.getElementById("script-url").value.trim();
+
+        try {
+          const response = await fetch(`${scriptUrl}?action=get&id=${encodeURIComponent(qrId)}`);
+          const data = await response.json();
+
+          if (data.status === "success" && data.url) {
+            window.location.replace(data.url);
+          } else {
+            document.getElementById("redirect-status").innerText = "Código QR no encontrado o inactivado.";
+          }
+        } catch (err) {
+          document.getElementById("redirect-status").innerText = "Error al conectar con el servidor de redirección.";
+        }
+      } else {
+        updateQR();
+      }
+    });
 
     function toggleType() {
       const type = document.getElementById("qr-type").value;
@@ -353,6 +412,8 @@
         finalData = `${BASE_GITHUB_URL}?r=${encodeURIComponent(qrId)}`;
       }
 
+      document.getElementById("encoded-info").innerText = "Contenido: " + finalData;
+
       qrCode.update({
         data: finalData,
         dotsOptions: { color: document.getElementById("color-dots").value, type: document.getElementById("dots-style").value },
@@ -371,8 +432,6 @@
       const qrId = document.getElementById("qr-id").value.trim();
       const scriptUrl = document.getElementById("script-url").value.trim();
 
-      if (scriptUrl) localStorage.setItem("script_url", scriptUrl);
-
       updateQR();
 
       if (type === "dynamic") {
@@ -381,10 +440,10 @@
           await fetch(`${scriptUrl}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}`, { mode: 'no-cors' });
           alert("¡QR Dinámico guardado exitosamente en tu Google Sheet!");
         } catch (e) {
-          alert("Error al conectar con Google Sheets.");
+          alert("Error al guardar en Google Sheets.");
         }
       } else {
-        alert("¡QR Estático listo!");
+        alert("¡QR Estático listo para descargar!");
       }
     }
 
