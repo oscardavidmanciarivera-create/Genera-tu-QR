@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Craft PRO - Generador de Códigos QR Estáticos y Dinámicos</title>
+  <title>QR Craft PRO - Generador de Códigos QR</title>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <style>
     :root {
@@ -67,18 +67,18 @@
       align-items: center;
     }
 
-    .icon-btn {
+    .icon-btn, .lang-select {
       background: var(--card-bg);
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 8px 14px;
+      padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
       font-weight: 600;
       font-size: 0.85rem;
+      outline: none;
     }
 
-    /* Pestañas de Navegación */
     .tabs-nav {
       max-width: 1200px;
       margin: 0 auto 16px;
@@ -109,7 +109,6 @@
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
-    /* Dashboard Layout */
     .dashboard {
       max-width: 1200px;
       margin: 0 auto;
@@ -171,7 +170,7 @@
       margin-top: 14px;
     }
 
-    input[type="text"], input[type="url"], input[type="password"], select {
+    input[type="text"], input[type="url"], input[type="password"], input[type="tel"], input[type="email"], select, textarea {
       width: 100%;
       padding: 10px 14px;
       border-radius: 8px;
@@ -183,7 +182,7 @@
       outline: none;
     }
 
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       border-color: var(--accent);
     }
 
@@ -193,7 +192,6 @@
       gap: 12px;
     }
 
-    /* Vista Previa */
     .preview-card {
       background: var(--card-bg);
       border-radius: var(--radius);
@@ -280,33 +278,40 @@
 </head>
 <body>
 
-  <!-- Vista de Redirección Automática para Celulares -->
+  <!-- Vista de Redirección Automática -->
   <div id="redirect-view" class="redirect-screen" style="display: none;">
     <div class="spinner"></div>
-    <h2 id="redirect-status">Redirigiendo a tu destino...</h2>
+    <h2 id="redirect-status" data-i18n="redirecting">Redirigiendo a tu destino...</h2>
   </div>
 
-  <!-- Interfaz de Creación -->
+  <!-- Interfaz Principal -->
   <div id="app-view">
     <div class="header">
       <div class="brand">
         <div class="brand-logo">QR</div>
         <div>
           <h2 style="margin: 0; font-size: 1.2rem;">QR Craft PRO</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Generador de Códigos QR Dinámicos y Estáticos</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);" data-i18n="subtitle">Plataforma Empresarial de Códigos QR</span>
         </div>
       </div>
       <div class="header-actions">
-        <button class="icon-btn" onclick="toggleDarkMode()">🌙 Modo</button>
+        <select id="lang-selector" class="lang-select" onchange="changeLanguage(this.value)">
+          <option value="es" selected>🇪🇸 Español</option>
+          <option value="en">🇺🇸 English</option>
+          <option value="fr">🇫🇷 Français</option>
+          <option value="de">🇩🇪 Deutsch</option>
+          <option value="pt">🇧🇷 Português</option>
+        </select>
+        <button class="icon-btn" onclick="toggleDarkMode()">🌙</button>
       </div>
     </div>
 
     <!-- Pestañas de Navegación -->
     <div class="tabs-nav">
-      <button class="tab-btn active" onclick="switchTab(0)">1. Contenido y Modo</button>
-      <button class="tab-btn" onclick="switchTab(1)">2. Colores y Puntos</button>
-      <button class="tab-btn" onclick="switchTab(2)">3. Esquinas y Marcos</button>
-      <button class="tab-btn" onclick="switchTab(3)">4. Logo y Calidad</button>
+      <button class="tab-btn active" onclick="switchTab(0)" data-i18n="tab1">1. Contenido y Modo</button>
+      <button class="tab-btn" onclick="switchTab(1)" data-i18n="tab2">2. Colores y Puntos</button>
+      <button class="tab-btn" onclick="switchTab(2)" data-i18n="tab3">3. Esquinas y Marcos</button>
+      <button class="tab-btn" onclick="switchTab(3)" data-i18n="tab4">4. Logo y Calidad</button>
     </div>
 
     <div class="dashboard">
@@ -316,48 +321,94 @@
         
         <!-- Pestaña 1: Contenido -->
         <div class="tab-pane active" id="pane-0">
-          <h3 style="margin-top: 0;">Tipo y Enlace</h3>
+          <h3 style="margin-top: 0;" data-i18n="type_title">Tipo de Código QR</h3>
           
           <div class="type-cards">
             <div class="type-card" id="card-static" onclick="setQrType('static')">
-              <h4>⚡ QR Estático</h4>
-              <p>Enlace fijo incrustado. No se puede modificar tras imprimir.</p>
+              <h4 data-i18n="static_qr">⚡ QR Estático</h4>
+              <p data-i18n="static_desc">Contenido fijo grabado en la imagen.</p>
             </div>
             <div class="type-card selected" id="card-dynamic" onclick="setQrType('dynamic')">
-              <h4>🔄 QR Dinámico</h4>
-              <p>Permite editar el destino en Google Sheets sin cambiar la imagen.</p>
+              <h4 data-i18n="dynamic_qr">🔄 QR Dinámico</h4>
+              <p data-i18n="dynamic_desc">Permite cambiar el destino en cualquier momento.</p>
             </div>
           </div>
 
-          <label>Enlace / URL de Destino *</label>
-          <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/" oninput="updateQR()">
+          <label data-i18n="cat_title">Categoría de Contenido</label>
+          <select id="dynamic-category" onchange="toggleCategoryFields(); updateQR();">
+            <option value="url" selected data-i18n="cat_url">🌐 Sitio Web / URL</option>
+            <option value="whatsapp" data-i18n="cat_wa">💬 WhatsApp Directo</option>
+            <option value="phone" data-i18n="cat_phone">📞 Llamada Telefónica</option>
+            <option value="email" data-i18n="cat_email">✉️ Correo Electrónico</option>
+            <option value="vcard" data-i18n="cat_vcard">👤 Tarjeta de Contacto (vCard)</option>
+          </select>
 
-          <div id="dynamic-options" style="margin-top: 15px;">
-            <label>ID Único del QR Dinámico</label>
+          <!-- Campos dinámicos -->
+          <div id="cat-url-group" style="margin-top: 10px;">
+            <label data-i18n="lbl_url">URL de Destino *</label>
+            <input type="url" id="target-url" placeholder="https://ejemplo.com/mi-pagina" oninput="updateQR()">
+          </div>
+
+          <div id="cat-whatsapp-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_wa_phone">Número de WhatsApp (con código de país) *</label>
+            <input type="text" id="wa-phone" placeholder="Ej: +504 99887766" oninput="updateQR()">
+            <label data-i18n="lbl_wa_msg">Mensaje Predeterminado</label>
+            <textarea id="wa-msg" placeholder="Hola, solicito información..." oninput="updateQR()"></textarea>
+          </div>
+
+          <div id="cat-phone-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_phone">Número Telefónico *</label>
+            <input type="tel" id="tel-number" placeholder="+504 9999-9999" oninput="updateQR()">
+          </div>
+
+          <div id="cat-email-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_email">Correo Electrónico *</label>
+            <input type="email" id="email-addr" placeholder="contacto@empresa.com" oninput="updateQR()">
+            <label data-i18n="lbl_email_sub">Asunto del Correo</label>
+            <input type="text" id="email-sub" placeholder="Información sobre servicios" oninput="updateQR()">
+          </div>
+
+          <div id="cat-vcard-group" style="display:none; margin-top: 10px;">
+            <div class="grid-2">
+              <div>
+                <label data-i18n="lbl_vc_name">Nombre Completo</label>
+                <input type="text" id="vc-name" placeholder="Ej: Juan Pérez" oninput="updateQR()">
+              </div>
+              <div>
+                <label data-i18n="lbl_vc_phone">Teléfono</label>
+                <input type="text" id="vc-phone" placeholder="+504..." oninput="updateQR()">
+              </div>
+            </div>
+            <label data-i18n="lbl_email">Correo Electrónico</label>
+            <input type="email" id="vc-email" placeholder="contacto@empresa.com" oninput="updateQR()">
+          </div>
+
+          <div id="dynamic-options" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px;">
+            <label data-i18n="lbl_id">Identificador Único del QR</label>
             <input type="text" id="qr-id" oninput="updateQR()">
 
-            <label>Clave de Seguridad de Administración *</label>
-            <input type="password" id="admin-key" placeholder="Clave configurada en tu Apps Script">
+            <label data-i18n="lbl_key">Clave de Seguridad de Acceso *</label>
+            <input type="password" id="admin-key" placeholder="Ingresa tu clave de acceso autorizada">
           </div>
         </div>
 
         <!-- Pestaña 2: Colores -->
         <div class="tab-pane" id="pane-1">
-          <h3 style="margin-top: 0;">Apariencia y Colores</h3>
+          <h3 style="margin-top: 0;" data-i18n="tab2">Apariencia y Colores</h3>
 
-          <label>Tipo de Color</label>
+          <label data-i18n="lbl_color_type">Tipo de Color</label>
           <select id="color-type" onchange="toggleColorType(); updateQR();">
-            <option value="solid" selected>Color Sólido</option>
-            <option value="gradient">Gradiente (Degradado)</option>
+            <option value="solid" selected data-i18n="opt_solid">Color Sólido</option>
+            <option value="gradient" data-i18n="opt_gradient">Gradiente (Degradado)</option>
           </select>
           
           <div class="grid-2" id="solid-color-group">
             <div>
-              <label>Color Principal (Puntos)</label>
+              <label data-i18n="lbl_dots_color">Color Principal</label>
               <input type="color" id="color-dots" value="#2563eb" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
             </div>
             <div>
-              <label>Color de Fondo</label>
+              <label data-i18n="lbl_bg_color">Color Fondo</label>
               <input type="color" id="color-bg" value="#ffffff" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
             </div>
           </div>
@@ -365,22 +416,22 @@
           <div id="gradient-color-group" style="display:none;">
             <div class="grid-2">
               <div>
-                <label>Color Gradiente 1</label>
+                <label data-i18n="lbl_grad1">Color Gradiente 1</label>
                 <input type="color" id="grad-color1" value="#2563eb" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
               </div>
               <div>
-                <label>Color Gradiente 2</label>
+                <label data-i18n="lbl_grad2">Color Gradiente 2</label>
                 <input type="color" id="grad-color2" value="#9333ea" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
               </div>
             </div>
-            <label>Tipo de Gradiente</label>
+            <label data-i18n="lbl_grad_type">Tipo de Gradiente</label>
             <select id="grad-type" onchange="updateQR()">
               <option value="linear">Lineal</option>
               <option value="radial">Radial</option>
             </select>
           </div>
 
-          <label>Estilo de Módulos (Dots)</label>
+          <label data-i18n="lbl_dots_style">Estilo de Módulos (Dots)</label>
           <select id="dots-style" onchange="updateQR()">
             <option value="rounded" selected>Redondeado</option>
             <option value="dots">Puntos</option>
@@ -392,16 +443,16 @@
 
         <!-- Pestaña 3: Esquinas -->
         <div class="tab-pane" id="pane-2">
-          <h3 style="margin-top: 0;">Esquinas del QR</h3>
+          <h3 style="margin-top: 0;" data-i18n="tab3">Esquinas del QR</h3>
 
-          <label>Marco Exterior (Eye Frame)</label>
+          <label data-i18n="lbl_eye_frame">Marco Exterior (Eye Frame)</label>
           <select id="corner-square" onchange="updateQR()">
             <option value="extra-rounded" selected>Curva Suave</option>
             <option value="square">Cuadrado</option>
             <option value="dot">Redondo</option>
           </select>
 
-          <label>Centro Interior (Eye Ball)</label>
+          <label data-i18n="lbl_eye_ball">Centro Interior (Eye Ball)</label>
           <select id="corner-dot" onchange="updateQR()">
             <option value="dot" selected>Círculo</option>
             <option value="square">Cuadrado</option>
@@ -410,14 +461,14 @@
 
         <!-- Pestaña 4: Logo -->
         <div class="tab-pane" id="pane-3">
-          <h3 style="margin-top: 0;">Logo y Resolución</h3>
+          <h3 style="margin-top: 0;" data-i18n="tab4">Logo y Calidad</h3>
 
-          <label>Subir Logo Central (PNG / JPG)</label>
+          <label data-i18n="lbl_logo">Subir Logo Central (PNG / JPG)</label>
           <input type="file" id="logo-input" accept="image/*" onchange="handleLogo(event)">
 
-          <label>Corrección de Errores (ECC)</label>
+          <label data-i18n="lbl_ecc">Corrección de Errores (ECC)</label>
           <select id="ecc-level" onchange="updateQR()">
-            <option value="Q" selected>Q - Alto (25% recomendado con logo)</option>
+            <option value="Q" selected>Q - Alto (25%)</option>
             <option value="H">H - Máximo (30%)</option>
             <option value="M">M - Medio (15%)</option>
             <option value="L">L - Bajo (7%)</option>
@@ -426,18 +477,18 @@
 
       </div>
 
-      <!-- Vista Previa Fija a la Derecha -->
+      <!-- Vista Previa -->
       <div class="preview-card">
         <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
-          <h3 style="margin: 0; font-size: 1.05rem;">Vista Previa</h3>
-          <span class="badge-preview" id="preview-badge">Dinámico</span>
+          <h3 style="margin: 0; font-size: 1.05rem;" data-i18n="preview">Vista Previa</h3>
+          <span class="badge-preview" id="preview-badge" data-i18n="badge_dynamic">Dinámico</span>
         </div>
         
         <div class="qr-container">
           <div id="qrcode"></div>
         </div>
 
-        <button class="btn-primary" onclick="saveAndGenerate()">Guardar en Google Sheets</button>
+        <button class="btn-primary" onclick="saveAndGenerate()" data-i18n="btn_save">Guardar Cambios</button>
 
         <div class="grid-2" style="width: 100%; margin-top: 10px;">
           <button class="btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
@@ -454,6 +505,81 @@
     
     let currentType = "dynamic";
     let logoDataUrl = "";
+    let currentLang = "es";
+
+    const translations = {
+      es: {
+        subtitle: "Plataforma Empresarial de Códigos QR",
+        tab1: "1. Contenido y Modo", tab2: "2. Colores y Puntos", tab3: "3. Esquinas y Marcos", tab4: "4. Logo y Calidad",
+        type_title: "Tipo de Código QR", static_qr: "⚡ QR Estático", static_desc: "Contenido fijo grabado en la imagen.",
+        dynamic_qr: "🔄 QR Dinámico", dynamic_desc: "Permite cambiar el destino en cualquier momento.",
+        cat_title: "Categoría de Contenido", cat_url: "🌐 Sitio Web / URL", cat_wa: "💬 WhatsApp Directo", cat_phone: "📞 Llamada Telefónica", cat_email: "✉️ Correo Electrónico", cat_vcard: "👤 Tarjeta de Contacto (vCard)",
+        lbl_url: "URL de Destino *", lbl_wa_phone: "Número WhatsApp *", lbl_wa_msg: "Mensaje Predeterminado", lbl_phone: "Número Telefónico *", lbl_email: "Correo Electrónico *", lbl_email_sub: "Asunto del Correo", lbl_vc_name: "Nombre Completo", lbl_vc_phone: "Teléfono",
+        lbl_id: "Identificador Único del QR", lbl_key: "Clave de Seguridad de Acceso *", key_ph: "Ingresa tu clave de acceso autorizada",
+        lbl_color_type: "Tipo de Color", opt_solid: "Color Sólido", opt_gradient: "Gradiente (Degradado)", lbl_dots_color: "Color Principal", lbl_bg_color: "Color Fondo", lbl_grad1: "Color Gradiente 1", lbl_grad2: "Color Gradiente 2", lbl_grad_type: "Tipo de Gradiente", lbl_dots_style: "Estilo de Módulos (Dots)",
+        lbl_eye_frame: "Marco Exterior (Eye Frame)", lbl_eye_ball: "Centro Interior (Eye Ball)", lbl_logo: "Subir Logo Central (PNG / JPG)", lbl_ecc: "Corrección de Errores (ECC)",
+        preview: "Vista Previa", badge_dynamic: "Dinámico", badge_static: "Estático", btn_save: "Guardar Cambios", redirecting: "Redirigiendo a tu destino..."
+      },
+      en: {
+        subtitle: "Enterprise QR Code Platform",
+        tab1: "1. Content & Mode", tab2: "2. Colors & Dots", tab3: "3. Corners & Frames", tab4: "4. Logo & Quality",
+        type_title: "QR Code Type", static_qr: "⚡ Static QR", static_desc: "Fixed content embedded in image.",
+        dynamic_qr: "🔄 Dynamic QR", dynamic_desc: "Allows editing target URL anytime.",
+        cat_title: "Content Category", cat_url: "🌐 Website / URL", cat_wa: "💬 Direct WhatsApp", cat_phone: "📞 Phone Call", cat_email: "✉️ Email Message", cat_vcard: "👤 Digital Contact (vCard)",
+        lbl_url: "Destination URL *", lbl_wa_phone: "WhatsApp Number *", lbl_wa_msg: "Default Message", lbl_phone: "Phone Number *", lbl_email: "Email Address *", lbl_email_sub: "Email Subject", lbl_vc_name: "Full Name", lbl_vc_phone: "Phone",
+        lbl_id: "Unique QR Identifier", lbl_key: "Access Security Key *", key_ph: "Enter authorized access key",
+        lbl_color_type: "Color Type", opt_solid: "Solid Color", opt_gradient: "Gradient", lbl_dots_color: "Main Color", lbl_bg_color: "Background Color", lbl_grad1: "Gradient Color 1", lbl_grad2: "Gradient Color 2", lbl_grad_type: "Gradient Type", lbl_dots_style: "Module Style (Dots)",
+        lbl_eye_frame: "Outer Frame (Eye Frame)", lbl_eye_ball: "Inner Center (Eye Ball)", lbl_logo: "Upload Center Logo (PNG / JPG)", lbl_ecc: "Error Correction (ECC)",
+        preview: "Live Preview", badge_dynamic: "Dynamic", badge_static: "Static", btn_save: "Save Changes", redirecting: "Redirecting to target..."
+      },
+      fr: {
+        subtitle: "Plateforme QR d'Entreprise",
+        tab1: "1. Contenu et Mode", tab2: "2. Couleurs et Points", tab3: "3. Coins et Cadres", tab4: "4. Logo et Qualité",
+        type_title: "Type de Code QR", static_qr: "⚡ QR Statique", static_desc: "Contenu fixe intégré dans l'image.",
+        dynamic_qr: "🔄 QR Dynamique", dynamic_desc: "Permet de modifier le lien à tout moment.",
+        cat_title: "Catégorie de Contenu", cat_url: "🌐 Site Web / URL", cat_wa: "💬 WhatsApp Direct", cat_phone: "📞 Appel Téléphonique", cat_email: "✉️ E-mail Direct", cat_vcard: "👤 Carte de Contact (vCard)",
+        lbl_url: "URL de Destination *", lbl_wa_phone: "Numéro WhatsApp *", lbl_wa_msg: "Message par Défaut", lbl_phone: "Numéro de Téléphone *", lbl_email: "Adresse E-mail *", lbl_email_sub: "Sujet du Message", lbl_vc_name: "Nom Complet", lbl_vc_phone: "Téléphone",
+        lbl_id: "Identifiant Unique du QR", lbl_key: "Clé de Sécurité *", key_ph: "Entrez votre clé autorisée",
+        lbl_color_type: "Type de Couleur", opt_solid: "Couleur Solide", opt_gradient: "Dégradé", lbl_dots_color: "Couleur Principale", lbl_bg_color: "Couleur de Fond", lbl_grad1: "Couleur Dégradé 1", lbl_grad2: "Couleur Dégradé 2", lbl_grad_type: "Type de Dégradé", lbl_dots_style: "Style de Modules",
+        lbl_eye_frame: "Cadre Extérieur", lbl_eye_ball: "Centre Intérieur", lbl_logo: "Télécharger Logo (PNG / JPG)", lbl_ecc: "Correction d'Erreur (ECC)",
+        preview: "Aperçu en Direct", badge_dynamic: "Dynamique", badge_static: "Statique", btn_save: "Enregistrer", redirecting: "Redirection en cours..."
+      },
+      de: {
+        subtitle: "Enterprise QR-Code-Plattform",
+        tab1: "1. Inhalt & Modus", tab2: "2. Farben & Punkte", tab3: "3. Ecken & Rahmen", tab4: "4. Logo & Qualität",
+        type_title: "QR-Code-Typ", static_qr: "⚡ Statischer QR", static_desc: "Fester Inhalt im Bild eingebettet.",
+        dynamic_qr: "🔄 Dynamischer QR", dynamic_desc: "Jederzeit bearbeitbare Ziel-URL.",
+        cat_title: "Inhaltskategorie", cat_url: "🌐 Webseite / URL", cat_wa: "💬 Direktes WhatsApp", cat_phone: "📞 Telefonanruf", cat_email: "✉️ E-Mail-Nachricht", cat_vcard: "👤 Digitale Kontaktkarte (vCard)",
+        lbl_url: "Ziel-URL *", lbl_wa_phone: "WhatsApp-Nummer *", lbl_wa_msg: "Standardnachricht", lbl_phone: "Telefonnummer *", lbl_email: "E-Mail-Adresse *", lbl_email_sub: "E-Mail-Betreff", lbl_vc_name: "Vollständiger Name", lbl_vc_phone: "Telefon",
+        lbl_id: "Eindeutige QR-ID", lbl_key: "Sicherheitsschlüssel *", key_ph: "Autorisierten Schlüssel eingeben",
+        lbl_color_type: "Farbtyp", opt_solid: "Einfarbig", opt_gradient: "Farbverlauf", lbl_dots_color: "Hauptfarbe", lbl_bg_color: "Hintergrundfarbe", lbl_grad1: "Verlaufsfarbe 1", lbl_grad2: "Verlaufsfarbe 2", lbl_grad_type: "Verlaufstyp", lbl_dots_style: "Modulstil (Punkte)",
+        lbl_eye_frame: "Äußerer Rahmen", lbl_eye_ball: "Inneres Zentrum", lbl_logo: "Logo hochladen (PNG / JPG)", lbl_ecc: "Fehlerkorrektur (ECC)",
+        preview: "Live-Vorschau", badge_dynamic: "Dynamisch", badge_static: "Statisch", btn_save: "Speichern", redirecting: "Weiterleitung läuft..."
+      },
+      pt: {
+        subtitle: "Plataforma Empresarial de QR Code",
+        tab1: "1. Conteúdo e Modo", tab2: "2. Cores e Pontos", tab3: "3. Cantos e Molduras", tab4: "4. Logo e Qualidade",
+        type_title: "Tipo de Código QR", static_qr: "⚡ QR Estático", static_desc: "Conteúdo fixo gravado na imagem.",
+        dynamic_qr: "🔄 QR Dinâmico", dynamic_desc: "Permite alterar o destino a qualquer momento.",
+        cat_title: "Categoria de Conteúdo", cat_url: "🌐 Website / URL", cat_wa: "💬 WhatsApp Direto", cat_phone: "📞 Chamada Telefônica", cat_email: "✉️ E-mail Direto", cat_vcard: "👤 Cartão de Contato (vCard)",
+        lbl_url: "URL de Destino *", lbl_wa_phone: "Número do WhatsApp *", lbl_wa_msg: "Mensagem Padrão", lbl_phone: "Número de Telefone *", lbl_email: "Endereço de E-mail *", lbl_email_sub: "Assunto do E-mail", lbl_vc_name: "Nome Completo", lbl_vc_phone: "Telefone",
+        lbl_id: "Identificador Único do QR", lbl_key: "Chave de Segurança *", key_ph: "Insira sua chave de acesso autorizada",
+        lbl_color_type: "Tipo de Cor", opt_solid: "Cor Sólida", opt_gradient: "Gradiente", lbl_dots_color: "Cor Principal", lbl_bg_color: "Cor de Fundo", lbl_grad1: "Cor Gradiente 1", lbl_grad2: "Cor Gradiente 2", lbl_grad_type: "Tipo de Gradiente", lbl_dots_style: "Estilo dos Módulos",
+        lbl_eye_frame: "Moldura Externa", lbl_eye_ball: "Centro Interno", lbl_logo: "Enviar Logo (PNG / JPG)", lbl_ecc: "Correção de Erros (ECC)",
+        preview: "Visualização ao Vivo", badge_dynamic: "Dinâmico", badge_static: "Estático", btn_save: "Salvar Alterações", redirecting: "Redirecionando..."
+      }
+    };
+
+    function changeLanguage(lang) {
+      currentLang = lang;
+      const dict = translations[lang] || translations.es;
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.innerText = dict[key];
+      });
+      document.getElementById('admin-key').placeholder = dict.key_ph;
+      document.getElementById('preview-badge').innerText = currentType === 'dynamic' ? dict.badge_dynamic : dict.badge_static;
+    }
 
     const qrCode = new QRCodeStyling({
       width: 220,
@@ -468,10 +594,9 @@
 
     qrCode.append(document.getElementById("qrcode"));
 
-    // Inicializar ID aleatorio
+    // Inicialización de ID único aleatorio
     document.getElementById("qr-id").value = "qr_" + Math.random().toString(36).substring(2, 8);
 
-    // Sistema de Pestañas
     function switchTab(index) {
       document.querySelectorAll('.tab-pane').forEach((pane, i) => {
         pane.classList.toggle('active', i === index);
@@ -481,14 +606,47 @@
       });
     }
 
-    // Cambiar entre Estático y Dinámico
     function setQrType(type) {
       currentType = type;
+      const dict = translations[currentLang] || translations.es;
       document.getElementById('card-static').classList.toggle('selected', type === 'static');
       document.getElementById('card-dynamic').classList.toggle('selected', type === 'dynamic');
       document.getElementById('dynamic-options').style.display = type === 'dynamic' ? 'block' : 'none';
-      document.getElementById('preview-badge').innerText = type === 'dynamic' ? 'Dinámico' : 'Estático';
+      document.getElementById('preview-badge').innerText = type === 'dynamic' ? dict.badge_dynamic : dict.badge_static;
       updateQR();
+    }
+
+    function toggleCategoryFields() {
+      const cat = document.getElementById("dynamic-category").value;
+      document.getElementById("cat-url-group").style.display = cat === "url" ? "block" : "none";
+      document.getElementById("cat-whatsapp-group").style.display = cat === "whatsapp" ? "block" : "none";
+      document.getElementById("cat-phone-group").style.display = cat === "phone" ? "block" : "none";
+      document.getElementById("cat-email-group").style.display = cat === "email" ? "block" : "none";
+      document.getElementById("cat-vcard-group").style.display = cat === "vcard" ? "block" : "none";
+    }
+
+    function getResolvedTargetUrl() {
+      const cat = document.getElementById("dynamic-category").value;
+      if (cat === "url") {
+        return document.getElementById("target-url").value.trim() || "https://ejemplo.com/mi-pagina";
+      } else if (cat === "whatsapp") {
+        const phone = document.getElementById("wa-phone").value.trim();
+        const msg = encodeURIComponent(document.getElementById("wa-msg").value);
+        return `https://wa.me/${phone}?text=${msg}`;
+      } else if (cat === "phone") {
+        const tel = document.getElementById("tel-number").value.trim();
+        return `tel:${tel}`;
+      } else if (cat === "email") {
+        const email = document.getElementById("email-addr").value.trim();
+        const sub = encodeURIComponent(document.getElementById("email-sub").value);
+        return `mailto:${email}?subject=${sub}`;
+      } else if (cat === "vcard") {
+        const name = document.getElementById("vc-name").value.trim();
+        const phone = document.getElementById("vc-phone").value.trim();
+        const email = document.getElementById("vc-email").value.trim();
+        return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
+      }
+      return document.getElementById("target-url").value.trim() || "https://ejemplo.com/mi-pagina";
     }
 
     function toggleColorType() {
@@ -513,7 +671,6 @@
       }
     }
 
-    // Interceptar escaneos (?r=ID)
     window.addEventListener("DOMContentLoaded", async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const qrId = urlParams.get("r");
@@ -529,10 +686,10 @@
           if (data.status === "success" && data.url) {
             window.location.replace(data.url);
           } else {
-            document.getElementById("redirect-status").innerText = "Código QR no encontrado o inactivado.";
+            document.getElementById("redirect-status").innerText = "Código QR no registrado.";
           }
         } catch (err) {
-          document.getElementById("redirect-status").innerText = "Error de conexión con el servidor.";
+          document.getElementById("redirect-status").innerText = "Error de conexión.";
         }
       } else {
         updateQR();
@@ -540,9 +697,9 @@
     });
 
     function updateQR() {
-      const targetUrl = document.getElementById("target-url").value.trim();
       const qrId = document.getElementById("qr-id").value.trim();
       const colorType = document.getElementById("color-type").value;
+      const targetUrl = getResolvedTargetUrl();
       
       let finalData = targetUrl;
       if (currentType === "dynamic" && qrId) {
@@ -559,60 +716,4 @@
         dotsConfig = {
           type: document.getElementById("dots-style").value,
           gradient: {
-            type: document.getElementById("grad-type").value,
-            rotation: 0,
-            colorStops: [
-              { offset: 0, color: document.getElementById("grad-color1").value },
-              { offset: 1, color: document.getElementById("grad-color2").value }
-            ]
-          }
-        };
-      }
-
-      qrCode.update({
-        data: finalData,
-        dotsOptions: dotsConfig,
-        backgroundOptions: { color: document.getElementById("color-bg").value },
-        cornersSquareOptions: { type: document.getElementById("corner-square").value },
-        cornersDotOptions: { type: document.getElementById("corner-dot").value },
-        qrOptions: { errorCorrectionLevel: document.getElementById("ecc-level").value },
-        image: logoDataUrl,
-        imageOptions: { crossOrigin: "anonymous", margin: 6 }
-      });
-    }
-
-    async function saveAndGenerate() {
-      const targetUrl = document.getElementById("target-url").value.trim();
-      const qrId = document.getElementById("qr-id").value.trim();
-      const adminKey = document.getElementById("admin-key").value.trim();
-
-      updateQR();
-
-      if (currentType === "dynamic") {
-        if (!adminKey) return alert("Ingresa tu clave de administración para guardar cambios.");
-        
-        const endpoint = `${SCRIPT_URL}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}&key=${encodeURIComponent(adminKey)}`;
-
-        try {
-          const res = await fetch(endpoint);
-          const data = await res.json();
-
-          if (data.status === "success") {
-            alert(`¡Éxito! El QR Dinámico con ID "${qrId}" se guardó en Google Sheets.`);
-          } else {
-            alert("Error: " + (data.message || "Verifica tu clave de administración."));
-          }
-        } catch (e) {
-          alert("Petición procesada.");
-        }
-      } else {
-        alert("¡QR Estático listo para descargar!");
-      }
-    }
-
-    function downloadQR(ext) {
-      qrCode.download({ name: "qr-craft-pro", extension: ext });
-    }
-  </script>
-</body>
-</html>
+            type: document.getElementById
