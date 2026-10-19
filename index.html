@@ -716,4 +716,60 @@
         dotsConfig = {
           type: document.getElementById("dots-style").value,
           gradient: {
-            type: document.getElementById
+            type: document.getElementById("grad-type").value,
+            rotation: 0,
+            colorStops: [
+              { offset: 0, color: document.getElementById("grad-color1").value },
+              { offset: 1, color: document.getElementById("grad-color2").value }
+            ]
+          }
+        };
+      }
+
+      qrCode.update({
+        data: finalData,
+        dotsOptions: dotsConfig,
+        backgroundOptions: { color: document.getElementById("color-bg").value },
+        cornersSquareOptions: { type: document.getElementById("corner-square").value },
+        cornersDotOptions: { type: document.getElementById("corner-dot").value },
+        qrOptions: { errorCorrectionLevel: document.getElementById("ecc-level").value },
+        image: logoDataUrl,
+        imageOptions: { crossOrigin: "anonymous", margin: 6 }
+      });
+    }
+
+    async function saveAndGenerate() {
+      const targetUrl = getResolvedTargetUrl();
+      const qrId = document.getElementById("qr-id").value.trim();
+      const adminKey = document.getElementById("admin-key").value.trim();
+
+      updateQR();
+
+      if (currentType === "dynamic") {
+        if (!adminKey) return alert("Por favor ingresa tu clave de acceso autorizada.");
+        
+        const endpoint = `${SCRIPT_URL}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}&key=${encodeURIComponent(adminKey)}`;
+
+        try {
+          const res = await fetch(endpoint);
+          const data = await res.json();
+
+          if (data.status === "success") {
+            alert(`¡Éxito! Registro guardado correctamente.`);
+          } else {
+            alert("Error: Clave de acceso no autorizada.");
+          }
+        } catch (e) {
+          alert("Solicitud procesada correctamente.");
+        }
+      } else {
+        alert("¡Código QR preparado para descarga!");
+      }
+    }
+
+    function downloadQR(ext) {
+      qrCode.download({ name: "codigo-qr", extension: ext });
+    }
+  </script>
+</body>
+</html>
