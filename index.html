@@ -3,39 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Enterprise - Plataforma Dinámica de Códigos QR</title>
+  <title>QR Craft PRO - Generador de Códigos QR Estáticos y Dinámicos</title>
   <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
   <style>
     :root {
+      --bg-page: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --border: #e2e8f0;
+      --radius: 16px;
+    }
+
+    .dark-mode {
       --bg-page: #0b0f19;
-      --panel-bg: #111827;
-      --card-bg: #1f2937;
-      --accent: #3b82f6;
-      --accent-gradient: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      --card-bg: #111827;
       --text-main: #f9fafb;
       --text-muted: #9ca3af;
       --border: #374151;
-      --radius: 12px;
     }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg-page);
       color: var(--text-main);
       padding: 24px;
-      box-sizing: border-box;
-      min-height: 100vh;
+      transition: background 0.3s, color 0.3s;
     }
 
-    .navbar {
-      max-width: 1280px;
+    .header {
+      max-width: 1200px;
       margin: 0 auto 24px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border);
     }
 
     .brand {
@@ -44,62 +48,119 @@
       gap: 12px;
     }
 
-    .brand-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--accent-gradient);
-      border-radius: 10px;
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      color: white;
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .icon-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    /* Pestañas de Navegación */
+    .tabs-nav {
+      max-width: 1200px;
+      margin: 0 auto 16px;
+      display: flex;
+      gap: 8px;
+      background: var(--card-bg);
+      padding: 6px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
       box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
     }
 
-    .badge-pro {
-      background: rgba(59, 130, 246, 0.15);
-      color: #60a5fa;
-      border: 1px solid rgba(96, 165, 250, 0.3);
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .layout {
-      max-width: 1280px;
+    /* Dashboard Layout */
+    .dashboard {
+      max-width: 1200px;
       margin: 0 auto;
       display: grid;
-      grid-template-columns: 1fr 420px;
+      grid-template-columns: 1fr 400px;
       gap: 24px;
     }
 
-    @media (max-width: 960px) {
-      .layout { grid-template-columns: 1fr; }
+    @media (max-width: 900px) {
+      .dashboard { grid-template-columns: 1fr; }
     }
 
     .panel {
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
+      background: var(--card-bg);
       border-radius: var(--radius);
+      border: 1px solid var(--border);
       padding: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    .section-title {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-top: 0;
-      margin-bottom: 16px;
-      color: var(--text-main);
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    .tab-pane {
+      display: none;
     }
 
-    .form-group {
-      margin-bottom: 16px;
+    .tab-pane.active {
+      display: block;
     }
+
+    .type-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .type-card {
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--card-bg);
+    }
+
+    .type-card.selected {
+      border-color: var(--accent);
+      background: rgba(37, 99, 235, 0.04);
+    }
+
+    .type-card h4 { margin: 0 0 6px 0; color: var(--text-main); font-size: 0.95rem; }
+    .type-card p { margin: 0; font-size: 0.75rem; color: var(--text-muted); }
 
     label {
       display: block;
@@ -107,19 +168,19 @@
       font-weight: 600;
       color: var(--text-muted);
       margin-bottom: 6px;
+      margin-top: 14px;
     }
 
-    input, select {
+    input[type="text"], input[type="url"], input[type="password"], select {
       width: 100%;
       padding: 10px 14px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
       border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--card-bg);
       color: var(--text-main);
-      font-size: 0.9rem;
       box-sizing: border-box;
+      font-size: 0.9rem;
       outline: none;
-      transition: border-color 0.2s;
     }
 
     input:focus, select:focus {
@@ -132,10 +193,11 @@
       gap: 12px;
     }
 
+    /* Vista Previa */
     .preview-card {
-      background: var(--panel-bg);
-      border: 1px solid var(--border);
+      background: var(--card-bg);
       border-radius: var(--radius);
+      border: 1px solid var(--border);
       padding: 24px;
       position: sticky;
       top: 24px;
@@ -143,49 +205,55 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
     }
 
-    .qr-box {
+    .badge-preview {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .qr-container {
       background: #ffffff;
-      padding: 24px;
-      border-radius: 16px;
-      margin: 20px 0;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      padding: 20px;
+      border-radius: 14px;
+      border: 2px dashed var(--border);
+      margin: 16px 0;
       display: flex;
       justify-content: center;
       align-items: center;
-    }
-
-    .btn {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
-      font-weight: 600;
-      border: none;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 0.9rem;
+      min-height: 240px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
     .btn-primary {
-      background: var(--accent-gradient);
+      width: 100%;
+      background: var(--accent);
       color: white;
-      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+      border: none;
+      padding: 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
     }
 
-    .btn-primary:hover {
-      opacity: 0.95;
-      transform: translateY(-1px);
-    }
+    .btn-primary:hover { background: var(--accent-hover); }
 
     .btn-secondary {
-      background: var(--card-bg);
+      width: 100%;
+      background: var(--border);
       color: var(--text-main);
-      border: 1px solid var(--border);
-    }
-
-    .btn-secondary:hover {
-      background: #374151;
+      border: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
     }
 
     .redirect-screen {
@@ -212,112 +280,147 @@
 </head>
 <body>
 
-  <!-- Vista de Redirección Automática -->
+  <!-- Vista de Redirección Automática para Celulares -->
   <div id="redirect-view" class="redirect-screen" style="display: none;">
     <div class="spinner"></div>
-    <h2 id="redirect-status">Redirigiendo a tu destino corporativo...</h2>
+    <h2 id="redirect-status">Redirigiendo a tu destino...</h2>
   </div>
 
-  <!-- Vista Principal del Generador -->
+  <!-- Interfaz de Creación -->
   <div id="app-view">
-    <div class="navbar">
+    <div class="header">
       <div class="brand">
-        <div class="brand-icon">QR</div>
+        <div class="brand-logo">QR</div>
         <div>
-          <h2 style="margin: 0; font-size: 1.2rem;">Plataforma QR Empresarial</h2>
-          <span style="font-size: 0.8rem; color: var(--text-muted);">Gestor de Códigos Dinámicos y Estáticos</span>
+          <h2 style="margin: 0; font-size: 1.2rem;">QR Craft PRO</h2>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">Generador de Códigos QR Dinámicos y Estáticos</span>
         </div>
       </div>
-      <span class="badge-pro">MODO SEGURIDAD ACTIVO</span>
+      <div class="header-actions">
+        <button class="icon-btn" onclick="toggleDarkMode()">🌙 Modo</button>
+      </div>
     </div>
 
-    <div class="layout">
-      <!-- PANEL DE CONFIGURACIÓN -->
+    <!-- Pestañas de Navegación -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="switchTab(0)">1. Contenido y Modo</button>
+      <button class="tab-btn" onclick="switchTab(1)">2. Colores y Puntos</button>
+      <button class="tab-btn" onclick="switchTab(2)">3. Esquinas y Marcos</button>
+      <button class="tab-btn" onclick="switchTab(3)">4. Logo y Calidad</button>
+    </div>
+
+    <div class="dashboard">
+      
+      <!-- Panel de Opciones -->
       <div class="panel">
         
-        <div class="section-title">1. Configuración del Enlace</div>
-        <div class="form-group">
-          <label>Tipo de Código QR</label>
-          <select id="qr-type" onchange="toggleType(); updateQR();">
-            <option value="dynamic" selected>QR Dinámico (Administrable / Editables)</option>
-            <option value="static">QR Estático (Enlace Fijo)</option>
+        <!-- Pestaña 1: Contenido -->
+        <div class="tab-pane active" id="pane-0">
+          <h3 style="margin-top: 0;">Tipo y Enlace</h3>
+          
+          <div class="type-cards">
+            <div class="type-card" id="card-static" onclick="setQrType('static')">
+              <h4>⚡ QR Estático</h4>
+              <p>Enlace fijo incrustado. No se puede modificar tras imprimir.</p>
+            </div>
+            <div class="type-card selected" id="card-dynamic" onclick="setQrType('dynamic')">
+              <h4>🔄 QR Dinámico</h4>
+              <p>Permite editar el destino en Google Sheets sin cambiar la imagen.</p>
+            </div>
+          </div>
+
+          <label>Enlace / URL de Destino *</label>
+          <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/" oninput="updateQR()">
+
+          <div id="dynamic-options" style="margin-top: 15px;">
+            <label>ID Único del QR Dinámico</label>
+            <input type="text" id="qr-id" oninput="updateQR()">
+
+            <label>Clave de Seguridad de Administración *</label>
+            <input type="password" id="admin-key" placeholder="Clave configurada en tu Apps Script">
+          </div>
+        </div>
+
+        <!-- Pestaña 2: Colores -->
+        <div class="tab-pane" id="pane-1">
+          <h3 style="margin-top: 0;">Apariencia y Colores</h3>
+          
+          <div class="grid-2">
+            <div>
+              <label>Color Principal (Puntos)</label>
+              <input type="color" id="color-dots" value="#2563eb" style="height: 42px; cursor: pointer;" onchange="updateQR()">
+            </div>
+            <div>
+              <label>Color de Fondo</label>
+              <input type="color" id="color-bg" value="#ffffff" style="height: 42px; cursor: pointer;" onchange="updateQR()">
+            </div>
+          </div>
+
+          <label>Estilo de Módulos (Dots)</label>
+          <select id="dots-style" onchange="updateQR()">
+            <option value="rounded" selected>Redondeado</option>
+            <option value="dots">Puntos</option>
+            <option value="square">Cuadrado</option>
+            <option value="classy">Elegante</option>
+            <option value="extra-rounded">Suave</option>
           </select>
         </div>
 
-        <div class="form-group">
-          <label>URL de Destino Final *</label>
-          <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/" oninput="updateQR()">
+        <!-- Pestaña 3: Esquinas -->
+        <div class="tab-pane" id="pane-2">
+          <h3 style="margin-top: 0;">Esquinas del QR</h3>
+
+          <label>Marco Exterior (Eye Frame)</label>
+          <select id="corner-square" onchange="updateQR()">
+            <option value="extra-rounded" selected>Curva Suave</option>
+            <option value="square">Cuadrado</option>
+            <option value="dot">Redondo</option>
+          </select>
+
+          <label>Centro Interior (Eye Ball)</label>
+          <select id="corner-dot" onchange="updateQR()">
+            <option value="dot" selected>Círculo</option>
+            <option value="square">Cuadrado</option>
+          </select>
         </div>
 
-        <div id="dynamic-group">
-          <div class="form-group">
-            <label>ID del QR Dinámico</label>
-            <input type="text" id="qr-id" oninput="updateQR()">
-          </div>
+        <!-- Pestaña 4: Logo -->
+        <div class="tab-pane" id="pane-3">
+          <h3 style="margin-top: 0;">Logo y Resolución</h3>
 
-          <div class="form-group">
-            <label>Clave de Administración Secreta *</label>
-            <input type="password" id="admin-key" placeholder="Pega tu clave secreta configurada en Apps Script">
-          </div>
-        </div>
-
-        <hr style="border: 0; border-top: 1px solid var(--border); margin: 20px 0;">
-
-        <div class="section-title">2. Personalización Visual</div>
-        
-        <div class="grid-2 form-group">
-          <div>
-            <label>Color Principal</label>
-            <input type="color" id="color-dots" value="#2563eb" style="height: 42px; cursor: pointer;" onchange="updateQR()">
-          </div>
-          <div>
-            <label>Color de Fondo</label>
-            <input type="color" id="color-bg" value="#ffffff" style="height: 42px; cursor: pointer;" onchange="updateQR()">
-          </div>
-        </div>
-
-        <div class="grid-2 form-group">
-          <div>
-            <label>Estilo de Puntos</label>
-            <select id="dots-style" onchange="updateQR()">
-              <option value="rounded" selected>Redondeado</option>
-              <option value="dots">Círculos</option>
-              <option value="square">Cuadrado</option>
-              <option value="classy">Elegante</option>
-            </select>
-          </div>
-          <div>
-            <label>Estilo de Esquinas</label>
-            <select id="corner-style" onchange="updateQR()">
-              <option value="extra-rounded" selected>Curva Suave</option>
-              <option value="square">Cuadrado</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Subir Logo de Empresa (PNG / JPG)</label>
+          <label>Subir Logo Central (PNG / JPG)</label>
           <input type="file" id="logo-input" accept="image/*" onchange="handleLogo(event)">
+
+          <label>Corrección de Errores (ECC)</label>
+          <select id="ecc-level" onchange="updateQR()">
+            <option value="Q" selected>Q - Alto (25% recomendado con logo)</option>
+            <option value="H">H - Máximo (30%)</option>
+            <option value="M">M - Medio (15%)</option>
+            <option value="L">L - Bajo (7%)</option>
+          </select>
         </div>
 
       </div>
 
-      <!-- VISTA PREVIA Y ACCIONES -->
+      <!-- Vista Previa Fija a la Derecha -->
       <div class="preview-card">
-        <h3 style="margin: 0; font-size: 1.1rem;">Vista Previa del QR</h3>
-        <span style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;" id="encoded-info"></span>
-
-        <div class="qr-box">
+        <div style="display: flex; justify-content: space-between; width: 100%; align-items: center;">
+          <h3 style="margin: 0; font-size: 1.05rem;">Vista Previa</h3>
+          <span class="badge-preview" id="preview-badge">Dinámico</span>
+        </div>
+        
+        <div class="qr-container">
           <div id="qrcode"></div>
         </div>
 
-        <button class="btn btn-primary" onclick="saveAndGenerate()">Guardar y Publicar QR</button>
+        <button class="btn-primary" onclick="saveAndGenerate()">Guardar en Google Sheets</button>
 
-        <div class="grid-2" style="width: 100%; margin-top: 12px;">
-          <button class="btn btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
-          <button class="btn btn-secondary" onclick="downloadQR('svg')">Descargar SVG</button>
+        <div class="grid-2" style="width: 100%; margin-top: 10px;">
+          <button class="btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
+          <button class="btn-secondary" onclick="downloadQR('svg')">Descargar SVG</button>
         </div>
       </div>
+
     </div>
   </div>
 
@@ -325,11 +428,12 @@
     const BASE_GITHUB_URL = "https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/";
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFcu4eujBiIaz12G3bvQSV-p-LJmpNv81TWIMUY9NhTIDwJoT7CcVorExwRcnIpg-fuA/exec";
     
+    let currentType = "dynamic";
     let logoDataUrl = "";
 
     const qrCode = new QRCodeStyling({
-      width: 240,
-      height: 240,
+      width: 220,
+      height: 220,
       type: "svg",
       data: BASE_GITHUB_URL,
       dotsOptions: { color: "#2563eb", type: "rounded" },
@@ -340,13 +444,46 @@
 
     qrCode.append(document.getElementById("qrcode"));
 
-    // Generar ID único
-    document.getElementById("qr-id").value = "corp_" + Math.random().toString(36).substring(2, 9);
+    // Inicializar ID aleatorio
+    document.getElementById("qr-id").value = "qr_" + Math.random().toString(36).substring(2, 8);
 
-    // Cargar clave guardada en el navegador si existe
-    document.getElementById("admin-key").value = localStorage.getItem("corp_admin_key") || "";
+    // Sistema de Pestañas
+    function switchTab(index) {
+      document.querySelectorAll('.tab-pane').forEach((pane, i) => {
+        pane.classList.toggle('active', i === index);
+      });
+      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
 
-    // Interceptar Redirección (?r=ID)
+    // Cambiar entre Estático y Dinámico
+    function setQrType(type) {
+      currentType = type;
+      document.getElementById('card-static').classList.toggle('selected', type === 'static');
+      document.getElementById('card-dynamic').classList.toggle('selected', type === 'dynamic');
+      document.getElementById('dynamic-options').style.display = type === 'dynamic' ? 'block' : 'none';
+      document.getElementById('preview-badge').innerText = type === 'dynamic' ? 'Dinámico' : 'Estático';
+      updateQR();
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    function handleLogo(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          logoDataUrl = e.target.result;
+          updateQR();
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Interceptar escaneos (?r=ID)
     window.addEventListener("DOMContentLoaded", async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const qrId = urlParams.get("r");
@@ -362,68 +499,47 @@
           if (data.status === "success" && data.url) {
             window.location.replace(data.url);
           } else {
-            document.getElementById("redirect-status").innerText = "Código QR no registrado o desactivado.";
+            document.getElementById("redirect-status").innerText = "Código QR no encontrado o inactivado.";
           }
         } catch (err) {
-          document.getElementById("redirect-status").innerText = "Error de conexión al servidor.";
+          document.getElementById("redirect-status").innerText = "Error de conexión con el servidor.";
         }
       } else {
         updateQR();
       }
     });
 
-    function toggleType() {
-      const type = document.getElementById("qr-type").value;
-      document.getElementById("dynamic-group").style.display = type === "dynamic" ? "block" : "none";
-    }
-
-    function handleLogo(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          logoDataUrl = e.target.result;
-          updateQR();
-        };
-        reader.readAsDataURL(file);
-      }
-    }
-
     function updateQR() {
-      const type = document.getElementById("qr-type").value;
       const targetUrl = document.getElementById("target-url").value.trim();
       const qrId = document.getElementById("qr-id").value.trim();
       
       let finalData = targetUrl;
-      if (type === "dynamic" && qrId) {
+      if (currentType === "dynamic" && qrId) {
         finalData = `${BASE_GITHUB_URL}?r=${encodeURIComponent(qrId)}`;
       }
-
-      document.getElementById("encoded-info").innerText = finalData;
 
       qrCode.update({
         data: finalData,
         dotsOptions: { color: document.getElementById("color-dots").value, type: document.getElementById("dots-style").value },
         backgroundOptions: { color: document.getElementById("color-bg").value },
-        cornersSquareOptions: { type: document.getElementById("corner-style").value },
+        cornersSquareOptions: { type: document.getElementById("corner-square").value },
+        cornersDotOptions: { type: document.getElementById("corner-dot").value },
+        qrOptions: { errorCorrectionLevel: document.getElementById("ecc-level").value },
         image: logoDataUrl,
-        imageOptions: { crossOrigin: "anonymous", margin: 4 }
+        imageOptions: { crossOrigin: "anonymous", margin: 6 }
       });
     }
 
     async function saveAndGenerate() {
-      const type = document.getElementById("qr-type").value;
       const targetUrl = document.getElementById("target-url").value.trim();
       const qrId = document.getElementById("qr-id").value.trim();
       const adminKey = document.getElementById("admin-key").value.trim();
 
       updateQR();
 
-      if (type === "dynamic") {
-        if (!adminKey) return alert("Ingresa la clave de administración.");
-
-        localStorage.setItem("corp_admin_key", adminKey);
-
+      if (currentType === "dynamic") {
+        if (!adminKey) return alert("Ingresa tu clave de administración para guardar cambios.");
+        
         const endpoint = `${SCRIPT_URL}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}&key=${encodeURIComponent(adminKey)}`;
 
         try {
@@ -431,20 +547,20 @@
           const data = await res.json();
 
           if (data.status === "success") {
-            alert(`¡Éxito! El QR Dinámico "${qrId}" ha sido guardado exitosamente.`);
+            alert(`¡Éxito! El QR Dinámico con ID "${qrId}" se guardó en Google Sheets.`);
           } else {
-            alert("Error: " + (data.message || "Clave incorrecta."));
+            alert("Error: " + (data.message || "Verifica tu clave de administración."));
           }
         } catch (e) {
-          alert("Los datos fueron enviados a procesamiento.");
+          alert("Petición procesada.");
         }
       } else {
-        alert("¡QR Estático listo!");
+        alert("¡QR Estático listo para descargar!");
       }
     }
 
     function downloadQR(ext) {
-      qrCode.download({ name: "qr-empresarial", extension: ext });
+      qrCode.download({ name: "qr-craft-pro", extension: ext });
     }
   </script>
 </body>
