@@ -344,16 +344,40 @@
         <!-- Pestaña 2: Colores -->
         <div class="tab-pane" id="pane-1">
           <h3 style="margin-top: 0;">Apariencia y Colores</h3>
+
+          <label>Tipo de Color</label>
+          <select id="color-type" onchange="toggleColorType(); updateQR();">
+            <option value="solid" selected>Color Sólido</option>
+            <option value="gradient">Gradiente (Degradado)</option>
+          </select>
           
-          <div class="grid-2">
+          <div class="grid-2" id="solid-color-group">
             <div>
               <label>Color Principal (Puntos)</label>
-              <input type="color" id="color-dots" value="#2563eb" style="height: 42px; cursor: pointer;" onchange="updateQR()">
+              <input type="color" id="color-dots" value="#2563eb" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
             </div>
             <div>
               <label>Color de Fondo</label>
-              <input type="color" id="color-bg" value="#ffffff" style="height: 42px; cursor: pointer;" onchange="updateQR()">
+              <input type="color" id="color-bg" value="#ffffff" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
             </div>
+          </div>
+
+          <div id="gradient-color-group" style="display:none;">
+            <div class="grid-2">
+              <div>
+                <label>Color Gradiente 1</label>
+                <input type="color" id="grad-color1" value="#2563eb" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
+              </div>
+              <div>
+                <label>Color Gradiente 2</label>
+                <input type="color" id="grad-color2" value="#9333ea" style="height: 42px; cursor: pointer; width:100%;" onchange="updateQR()">
+              </div>
+            </div>
+            <label>Tipo de Gradiente</label>
+            <select id="grad-type" onchange="updateQR()">
+              <option value="linear">Lineal</option>
+              <option value="radial">Radial</option>
+            </select>
           </div>
 
           <label>Estilo de Módulos (Dots)</label>
@@ -467,6 +491,12 @@
       updateQR();
     }
 
+    function toggleColorType() {
+      const type = document.getElementById("color-type").value;
+      document.getElementById("solid-color-group").style.display = type === "solid" ? "grid" : "none";
+      document.getElementById("gradient-color-group").style.display = type === "gradient" ? "block" : "none";
+    }
+
     function toggleDarkMode() {
       document.body.classList.toggle('dark-mode');
     }
@@ -512,15 +542,36 @@
     function updateQR() {
       const targetUrl = document.getElementById("target-url").value.trim();
       const qrId = document.getElementById("qr-id").value.trim();
+      const colorType = document.getElementById("color-type").value;
       
       let finalData = targetUrl;
       if (currentType === "dynamic" && qrId) {
         finalData = `${BASE_GITHUB_URL}?r=${encodeURIComponent(qrId)}`;
       }
 
+      let dotsConfig = {};
+      if (colorType === "solid") {
+        dotsConfig = {
+          color: document.getElementById("color-dots").value,
+          type: document.getElementById("dots-style").value
+        };
+      } else {
+        dotsConfig = {
+          type: document.getElementById("dots-style").value,
+          gradient: {
+            type: document.getElementById("grad-type").value,
+            rotation: 0,
+            colorStops: [
+              { offset: 0, color: document.getElementById("grad-color1").value },
+              { offset: 1, color: document.getElementById("grad-color2").value }
+            ]
+          }
+        };
+      }
+
       qrCode.update({
         data: finalData,
-        dotsOptions: { color: document.getElementById("color-dots").value, type: document.getElementById("dots-style").value },
+        dotsOptions: dotsConfig,
         backgroundOptions: { color: document.getElementById("color-bg").value },
         cornersSquareOptions: { type: document.getElementById("corner-square").value },
         cornersDotOptions: { type: document.getElementById("corner-dot").value },
