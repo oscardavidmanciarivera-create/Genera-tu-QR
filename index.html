@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Código QR & Sistema Dinámico</title>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #2563eb;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .container { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    h1, h2 { margin-top: 0; }
+    label { display: block; margin-top: 12px; color: var(--muted); font-size: 0.9rem; }
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 6px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      box-sizing: border-box;
+    }
+    button {
+      background: var(--accent);
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    button:hover { background: #1d4ed8; }
+    .qr-preview {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      padding: 20px;
+      border-radius: 12px;
+      margin-top: 15px;
+    }
+    #qrcode { margin-bottom: 15px; }
+    .redirecting {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 80vh;
+      text-align: center;
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #334155;
+      border-top: 4px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 20px;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <!-- Vista de Redirección Automática -->
+  <div id="redirect-view" class="redirecting" style="display: none;">
+    <div class="spinner"></div>
+    <h2 id="redirect-status">Redirigiendo a tu destino...</h2>
+  </div>
+
+  <!-- Generador y Panel Principal -->
+  <div id="app-view" class="container">
+    
+    <!-- Panel de Configuración -->
+    <div class="card">
+      <h1>Generador de QR</h1>
+
+      <label>URL de Apps Script (Tu Backend de Google Sheets)</label>
+      <input type="text" id="script-url" placeholder="https://script.google.com/macros/s/.../exec">
+
+      <label>Tipo de Código QR</label>
+      <select id="qr-type">
+        <option value="static">Estático (Enlace Directo)</option>
+        <option value="dynamic" selected>Dinámico (Gestionado por Google Sheets)</option>
+      </select>
+
+      <label>URL de Destino Real</label>
+      <input type="url" id="target-url" value="https://oscardavidmanciarivera-create.github.io/Oscar-Mancia-blog/">
+
+      <div id="dynamic-group">
+        <label>ID del QR Dinámico</label>
+        <input type="text" id="qr-id" placeholder="Ejemplo: mi_qr_01">
+      </div>
+
+      <label>Color del QR</label>
+      <input type="color" id="color-dots" value="#2563eb">
+
+      <label>Color de Fondo</label>
+      <input type="color" id="color-bg" value="#ffffff">
+
+      <button onclick="generateQR()">Generar y Guardar QR</button>
+    </div>
+
+    <!-- Panel de Previsualización y Descarga -->
+    <div class="card" style="display: flex; flex-direction: column; justify-content: space-between;">
+      <div>
+        <h2>Previsualización</h2>
+        <p style="font-size: 0.85rem; color: var(--muted);" id="encoded-info"></p>
+        <div class="qr-preview">
+          <div id="qrcode"></div>
+        </div>
+      </div>
+
+      <div>
+        <button onclick="downloadQR('png')">Descargar PNG</button>
+        <button onclick="downloadQR('svg')" style="background: #475569;">Descargar SVG</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Configura aquí la URL por defecto de tu Google Apps Script si no quieres pegarla cada vez
+    const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFcu4eujBiIaz12G3bvQSV-p-LJmpNv81TWIMUY9NhTIDwJoT7CcVorExwRcnIpg-fuA/exec"; 
+
+    const BASE_GITHUB_URL = "https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/";
+
+    let qrCode = new QRCodeStyling({
+      width: 260,
+      height: 260,
+      type: "svg",
+      data: BASE_GITHUB_URL,
+      dotsOptions: { color: "#2563eb", type: "rounded" },
+      backgroundOptions: { color: "#ffffff" }
+    });
+
+    qrCode.append(document.getElementById("qrcode"));
+
+    // Guardar/Cargar URL de Script desde LocalStorage
+    document.getElementById("script-url").value = localStorage.getItem("script_url") || DEFAULT_SCRIPT_URL;
+    document.getElementById("script-url").addEventListener("change", (e) => {
+      localStorage.setItem("script_url", e.target.value.trim());
+    });
+
+    // Detectar si la página fue abierta para Redireccionar (?r=ID)
+    window.addEventListener("DOMContentLoaded", async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const qrId = urlParams.get("r");
+
+      if (qrId) {
+        document.getElementById("app-view").style.display = "none";
+        document.getElementById("redirect-view").style.display = "flex";
+
+        const scriptUrl = localStorage.getItem("script_url") || DEFAULT_SCRIPT_URL;
+
+        if (!scriptUrl || scriptUrl.includes("PEGA_AQUI")) {
+          document.getElementById("redirect-status").innerText = "Error: No se ha configurado la URL del servidor en Apps Script.";
+          return;
+        }
+
+        try {
+          const response = await fetch(`${scriptUrl}?action=get&id=${encodeURIComponent(qrId)}`);
+          const data = await response.json();
+
+          if (data.status === "success" && data.url) {
+            window.location.replace(data.url);
+          } else {
+            document.getElementById("redirect-status").innerText = "El código QR no existe o ha sido deshabilitado.";
+          }
+        } catch (err) {
+          document.getElementById("redirect-status").innerText = "Error de conexión al resolver el código QR.";
+        }
+      } else {
+        // Generar un ID aleatorio si no se escribe uno
+        document.getElementById("qr-id").value = "qr_" + Math.random().toString(36).substring(2, 7);
+      }
+    });
+
+    async function generateQR() {
+      const type = document.getElementById("qr-type").value;
+      const targetUrl = document.getElementById("target-url").value.trim();
+      const qrId = document.getElementById("qr-id").value.trim();
+      const colorDots = document.getElementById("color-dots").value;
+      const colorBg = document.getElementById("color-bg").value;
+      const scriptUrl = document.getElementById("script-url").value.trim();
+
+      if (!targetUrl) return alert("Ingresa una URL de destino válida.");
+
+      let finalQrData = targetUrl;
+
+      if (type === "dynamic") {
+        if (!qrId) return alert("Ingresa un ID para el QR Dinámico.");
+        if (!scriptUrl) return alert("Ingresa la URL de tu Google Apps Script para usar QRs dinámicos.");
+
+        finalQrData = `${BASE_GITHUB_URL}?r=${encodeURIComponent(qrId)}`;
+
+        // Guardar la relación (ID -> URL Destino) en Google Sheets
+        try {
+          await fetch(`${scriptUrl}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}`, { mode: 'no-cors' });
+          alert("¡QR Dinámico guardado exitosamente en tu Google Sheet!");
+        } catch (err) {
+          alert("Aviso: No se pudo verificar el guardado en Google Sheets, revisa los permisos del script.");
+        }
+      }
+
+      document.getElementById("encoded-info").innerText = "Contenido en el QR: " + finalQrData;
+
+      qrCode.update({
+        data: finalQrData,
+        dotsOptions: { color: colorDots },
+        backgroundOptions: { color: colorBg }
+      });
+    }
+
+    function downloadQR(extension) {
+      qrCode.download({ name: "codigo-qr", extension: extension });
+    }
+  </script>
+</body>
+</html>
