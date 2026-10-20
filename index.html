@@ -274,6 +274,18 @@
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
+  
+    .plan-price { font-size: 1.1rem !important; font-weight: 700; color: var(--accent) !important; margin: 4px 0 !important; }
+    .plan-banner { width: 100%; box-sizing: border-box; margin: 12px 0 0; padding: 10px 12px; border-radius: 10px; font-size: .8rem; text-align: left; background: rgba(37,99,235,.08); }
+    .plan-banner.warn { background: rgba(245,158,11,.15); }
+    .plan-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+    @media (max-width: 600px) { .plan-grid { grid-template-columns: 1fr; } }
+    .btn-primary:disabled { opacity: .6; cursor: wait; }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 20px); background: #0f172a; color: #fff; padding: 12px 18px; border-radius: 10px; opacity: 0; pointer-events: none; transition: .25s; z-index: 99; max-width: 90vw; }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.err { background: #b91c1c; }
+    .landing { max-width: 420px; width: 100%; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+    .landing-text { white-space: pre-wrap; word-break: break-word; }
   </style>
 </head>
 <body>
@@ -282,6 +294,7 @@
   <div id="redirect-view" class="redirect-screen" style="display: none;">
     <div class="spinner"></div>
     <h2 id="redirect-status" data-i18n="redirecting">Redirigiendo a tu destino...</h2>
+    <div id="landing" class="landing" style="display:none"></div>
   </div>
 
   <!-- Interfaz Principal -->
@@ -312,6 +325,7 @@
       <button class="tab-btn" onclick="switchTab(1)" data-i18n="tab2">2. Colores y Puntos</button>
       <button class="tab-btn" onclick="switchTab(2)" data-i18n="tab3">3. Esquinas y Marcos</button>
       <button class="tab-btn" onclick="switchTab(3)" data-i18n="tab4">4. Logo y Calidad</button>
+      <button class="tab-btn" onclick="switchTab(4)" data-i18n="tab5">5. Plan y Vigencia</button>
     </div>
 
     <div class="dashboard">
@@ -341,6 +355,10 @@
             <option value="phone" data-i18n="cat_phone">📞 Llamada Telefónica</option>
             <option value="email" data-i18n="cat_email">✉️ Correo Electrónico</option>
             <option value="vcard" data-i18n="cat_vcard">👤 Tarjeta de Contacto (vCard)</option>
+            <option value="wifi" data-i18n="cat_wifi">📶 Red WiFi</option>
+            <option value="sms" data-i18n="cat_sms">💬 SMS</option>
+            <option value="geo" data-i18n="cat_geo">📍 Ubicación</option>
+            <option value="text" data-i18n="cat_text">📝 Texto</option>
           </select>
 
           <!-- Campos dinámicos -->
@@ -368,6 +386,28 @@
             <input type="text" id="email-sub" placeholder="Información sobre servicios" oninput="updateQR()">
           </div>
 
+          <div id="cat-wifi-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_wifi_ssid">Nombre de la red (SSID) *</label>
+            <input type="text" id="wifi-ssid" oninput="updateQR()">
+            <div class="grid-2">
+              <div><label data-i18n="lbl_wifi_pass">Contraseña</label><input type="text" id="wifi-pass" oninput="updateQR()"></div>
+              <div><label data-i18n="lbl_wifi_sec">Seguridad</label>
+                <select id="wifi-sec" onchange="updateQR()"><option value="WPA">WPA/WPA2</option><option value="WEP">WEP</option><option value="nopass">—</option></select></div>
+            </div>
+          </div>
+          <div id="cat-sms-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_sms_phone">Número *</label><input type="tel" id="sms-phone" oninput="updateQR()">
+            <label data-i18n="lbl_sms_msg">Mensaje</label><textarea id="sms-msg" oninput="updateQR()"></textarea>
+          </div>
+          <div id="cat-geo-group" style="display:none; margin-top: 10px;">
+            <div class="grid-2">
+              <div><label data-i18n="lbl_lat">Latitud *</label><input type="text" id="geo-lat" placeholder="14.0723" oninput="updateQR()"></div>
+              <div><label data-i18n="lbl_lng">Longitud *</label><input type="text" id="geo-lng" placeholder="-87.1921" oninput="updateQR()"></div>
+            </div>
+          </div>
+          <div id="cat-text-group" style="display:none; margin-top: 10px;">
+            <label data-i18n="lbl_text">Texto *</label><textarea id="text-body" oninput="updateQR()"></textarea>
+          </div>
           <div id="cat-vcard-group" style="display:none; margin-top: 10px;">
             <div class="grid-2">
               <div>
@@ -385,10 +425,10 @@
 
           <div id="dynamic-options" style="margin-top: 15px; border-top: 1px solid var(--border); padding-top: 12px;">
             <label data-i18n="lbl_id">Identificador Único del QR</label>
-            <input type="text" id="qr-id" oninput="updateQR()">
+            <input type="text" id="qr-id" readonly>
 
-            <label data-i18n="lbl_key">Clave de Seguridad de Acceso *</label>
-            <input type="password" id="admin-key" placeholder="Ingresa tu clave de acceso autorizada">
+            <label data-i18n="lbl_rec">Correo para recuperar y editar tu QR</label>
+            <input type="email" id="recover-email" placeholder="tucorreo@ejemplo.com">
           </div>
         </div>
 
@@ -459,6 +499,20 @@
           </select>
         </div>
 
+        <!-- Pestaña 5: Plan -->
+        <div class="tab-pane" id="pane-4">
+          <h3 style="margin-top: 0;" data-i18n="plan_title">Plan y vigencia</h3>
+          <p style="color: var(--text-muted); font-size: .85rem;" data-i18n="plan_hint"></p>
+          <div class="plan-grid" id="plan-grid"></div>
+          <div id="pay-actions" style="display: none;">
+            <div class="grid-2">
+              <button class="btn-primary" onclick="payPlan('tilopay')" data-i18n="pay_card">💳 Pagar con tarjeta</button>
+              <button class="btn-primary" onclick="payPlan('paypal')" data-i18n="pay_paypal">Pagar con PayPal (USD)</button>
+            </div>
+            <button class="btn-secondary" style="margin-top: 10px;" onclick="verifyPayment()" data-i18n="verify_btn">Ya pagué</button>
+          </div>
+        </div>
+
         <!-- Pestaña 4: Logo -->
         <div class="tab-pane" id="pane-3">
           <h3 style="margin-top: 0;" data-i18n="tab4">Logo y Calidad</h3>
@@ -488,25 +542,40 @@
           <div id="qrcode"></div>
         </div>
 
-        <button class="btn-primary" onclick="saveAndGenerate()" data-i18n="btn_save">Guardar Cambios</button>
+        <div class="plan-banner" id="plan-banner"></div>
+        <button class="btn-primary" id="save-btn" style="margin-top: 12px;" onclick="saveAndGenerate()" data-i18n="btn_save">Guardar Cambios</button>
 
-        <div class="grid-2" style="width: 100%; margin-top: 10px;">
-          <button class="btn-secondary" onclick="downloadQR('png')">Descargar PNG</button>
-          <button class="btn-secondary" onclick="downloadQR('svg')">Descargar SVG</button>
+        <div class="grid-2" style="width: 100%; margin-top: 4px;">
+          <div><label data-i18n="dl_size">Calidad</label>
+            <select id="dl-size"><option value="512">512 px</option><option value="1024">1024 px</option><option value="2048" selected>2048 px</option><option value="4096">4096 px</option></select></div>
+          <div><label data-i18n="dl_fmt">Formato</label>
+            <select id="dl-format"><option value="png">PNG</option><option value="svg">SVG</option><option value="jpeg">JPEG</option><option value="webp">WEBP</option></select></div>
         </div>
+        <button class="btn-secondary" style="margin-top: 12px;" onclick="downloadQR()" data-i18n="dl_btn">Descargar</button>
       </div>
 
     </div>
   </div>
 
-  <script>
-    const BASE_GITHUB_URL = "https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/";
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFcu4eujBiIaz12G3bvQSV-p-LJmpNv81TWIMUY9NhTIDwJoT7CcVorExwRcnIpg-fuA/exec";
-    
-    let currentType = "dynamic";
-    let logoDataUrl = "";
-    let currentLang = "es";
+  <div class="toast" id="toast"></div>
 
+  <script>
+    // ===== 1. CONFIG =====
+    const BASE_URL = "https://oscardavidmanciarivera-create.github.io/Genera-tu-QR/";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzFcu4eujBiIaz12G3bvQSV-p-LJmpNv81TWIMUY9NhTIDwJoT7CcVorExwRcnIpg-fuA/exec";
+    // Solo para mostrar. El precio y la duración reales los define Code.gs (deben coincidir).
+    const PLANS = {
+      free:    { days: 7,   price: {} },
+      monthly: { days: 30,  price: { HNL: 100, USD: 4.99 } },   // HNL = tarjeta (Tilopay), USD = PayPal
+      yearly:  { days: 365, price: { HNL: 900, USD: 49.99 } }
+    };
+    const PREVIEW_SIZE = 220, QR_MARGIN = 16;
+
+    // ===== 2. ESTADO =====
+    const S = { type: "dynamic", lang: "es", logo: "", plan: "free", buy: "monthly", expires: null }; // plan = activo (lo confirma el servidor), buy = plan elegido para comprar
+    const $ = id => document.getElementById(id);
+
+    // ===== 3. IDIOMAS =====
     const translations = {
       es: {
         subtitle: "Plataforma Empresarial de Códigos QR",
@@ -570,206 +639,339 @@
       }
     };
 
+    Object.assign(translations.es, {
+      tab5: "5. Plan y Vigencia", cat_wifi: "📶 Red WiFi", cat_sms: "💬 SMS", cat_geo: "📍 Ubicación", cat_text: "📝 Texto",
+      lbl_wifi_ssid: "Nombre de la red (SSID) *", lbl_wifi_pass: "Contraseña", lbl_wifi_sec: "Seguridad",
+      lbl_sms_phone: "Número *", lbl_sms_msg: "Mensaje", lbl_lat: "Latitud *", lbl_lng: "Longitud *", lbl_text: "Texto *",
+      plan_title: "Plan y vigencia",
+      plan_hint: "El plan gratuito dura 7 días. Con un plan de pago tu QR queda alojado y redirigido mientras esté vigente. Son planes prepagados: al vencer deja de redirigir, y si pagas de nuevo se suma al tiempo restante.",
+      plan_free: "Gratis", plan_free_d: "7 días de vigencia", plan_monthly: "Mensual", plan_monthly_d: "30 días, renovable",
+      plan_yearly: "Anual", plan_yearly_d: "365 días, mejor precio", per_monthly: "/mes", per_yearly: "/año",
+      pay_card: "💳 Pagar con tarjeta", pay_paypal: "Pagar con PayPal (USD)", verify_btn: "Ya pagué: verificar",
+      exp_none: "QR estático: no vence nunca.", exp_until: "Activo hasta", exp_left: "días restantes", exp_est: "fecha estimada, se confirma al guardar",
+      dl_size: "Calidad / tamaño", dl_fmt: "Formato", dl_btn: "Descargar",
+      saved_ok: "Guardado. Tu QR ya está activo.", saved_static: "QR listo para descargar.",
+      err_key: "No tienes permiso para modificar este QR desde este navegador.", err_conn: "No se pudo conectar. Intenta de nuevo.", err_url: "Ingresa una URL válida (https://…).",
+      err_pay: "No se pudo iniciar el pago. Intenta de nuevo.", pay_pending: "Pago no confirmado todavía.", pay_ok: "¡Pago confirmado! Plan activado.",
+      expired_t: "Este código QR venció", expired_d: "Venció el", not_found: "Código QR no registrado.", vc_dl: "Guardar contacto",
+      lbl_rec: "Correo para recuperar y editar tu QR (obligatorio en planes de pago)",
+      err_email: "Ingresa un correo válido para recibir tu enlace de edición.", edit_loaded: "QR cargado. Ya puedes editarlo."
+    });
+    Object.assign(translations.en, {
+      tab5: "5. Plan & Validity", cat_wifi: "📶 WiFi Network", cat_sms: "💬 SMS", cat_geo: "📍 Location", cat_text: "📝 Text",
+      lbl_wifi_ssid: "Network name (SSID) *", lbl_wifi_pass: "Password", lbl_wifi_sec: "Security",
+      lbl_sms_phone: "Number *", lbl_sms_msg: "Message", lbl_lat: "Latitude *", lbl_lng: "Longitude *", lbl_text: "Text *",
+      plan_title: "Plan & validity",
+      plan_hint: "The free plan lasts 7 days. A paid plan keeps your QR hosted and redirecting while active. Plans are prepaid: when one expires the QR stops redirecting, and paying again adds to the remaining time.",
+      plan_free: "Free", plan_free_d: "7 days of validity", plan_monthly: "Monthly", plan_monthly_d: "30 days, renewable",
+      plan_yearly: "Yearly", plan_yearly_d: "365 days, best price", per_monthly: "/mo", per_yearly: "/yr",
+      pay_card: "💳 Pay by card", pay_paypal: "Pay with PayPal (USD)", verify_btn: "I paid: verify",
+      exp_none: "Static QR: never expires.", exp_until: "Active until", exp_left: "days left", exp_est: "estimated date, confirmed on save",
+      dl_size: "Quality / size", dl_fmt: "Format", dl_btn: "Download",
+      saved_ok: "Saved. Your QR is now active.", saved_static: "QR ready to download.",
+      err_key: "You do not have permission to edit this QR from this browser.", err_conn: "Could not connect. Please try again.", err_url: "Enter a valid URL (https://…).",
+      err_pay: "Could not start the payment. Please try again.", pay_pending: "Payment not confirmed yet.", pay_ok: "Payment confirmed! Plan activated.",
+      expired_t: "This QR code has expired", expired_d: "Expired on", not_found: "QR code not registered.", vc_dl: "Save contact",
+      lbl_rec: "Email to recover and edit your QR (required on paid plans)",
+      err_email: "Enter a valid email to receive your edit link.", edit_loaded: "QR loaded. You can edit it now."
+    });
+
+    // Francés, alemán y portugués usan inglés para los textos nuevos hasta que se traduzcan
+    const dict = L => L === "es" ? translations.es : { ...translations.en, ...translations[L] };
+    const t = k => dict(S.lang)[k] ?? k;
+
     function changeLanguage(lang) {
-      currentLang = lang;
-      const dict = translations[lang] || translations.es;
-      document.querySelectorAll('[data-i18n]').forEach(el => {
-        const key = el.getAttribute('data-i18n');
-        if (dict[key]) el.innerText = dict[key];
-      });
-      document.getElementById('admin-key').placeholder = dict.key_ph;
-      document.getElementById('preview-badge').innerText = currentType === 'dynamic' ? dict.badge_dynamic : dict.badge_static;
+      S.lang = lang;
+      const d = dict(lang);
+      document.querySelectorAll("[data-i18n]").forEach(el => { if (d[el.dataset.i18n]) el.innerText = d[el.dataset.i18n]; });
+      $("preview-badge").innerText = S.type === "dynamic" ? d.badge_dynamic : d.badge_static;
+      renderPlans(); renderBanner();
     }
 
+    // ===== 4. UTILIDADES UI =====
+    let toastTimer;
+    function toast(msg, kind) {
+      const e = $("toast");
+      e.textContent = msg;
+      e.className = "toast show" + (kind === "err" ? " err" : "");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => e.className = "toast", 3500);
+    }
+    function switchTab(i) {
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.toggle("active", p.id === "pane-" + i));
+      document.querySelectorAll(".tab-btn").forEach((b, j) => b.classList.toggle("active", j === i));
+    }
+    function toggleDarkMode() { document.body.classList.toggle("dark-mode"); }
+    function toggleColorType() {
+      const g = $("color-type").value === "gradient";
+      $("solid-color-group").style.display = g ? "none" : "grid";
+      $("gradient-color-group").style.display = g ? "block" : "none";
+    }
+    function toggleCategoryFields() {
+      const cat = $("dynamic-category").value;
+      [...$("dynamic-category").options].forEach(o => {
+        const g = $("cat-" + o.value + "-group");
+        if (g) g.style.display = o.value === cat ? "block" : "none";
+      });
+    }
+    function handleLogo(e) {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = ev => { S.logo = ev.target.result; updateQR(); };
+      r.readAsDataURL(f);
+    }
+
+    // ===== 5. MOTOR QR =====
     const qrCode = new QRCodeStyling({
-      width: 220,
-      height: 220,
-      type: "svg",
-      data: BASE_GITHUB_URL,
+      width: PREVIEW_SIZE, height: PREVIEW_SIZE, type: "svg", margin: QR_MARGIN, data: BASE_URL,
       dotsOptions: { color: "#2563eb", type: "rounded" },
       backgroundOptions: { color: "#ffffff" },
       cornersSquareOptions: { type: "extra-rounded" },
       cornersDotOptions: { type: "dot" }
     });
+    qrCode.append($("qrcode"));
 
-    qrCode.append(document.getElementById("qrcode"));
-
-    // Inicialización de ID único aleatorio
-    document.getElementById("qr-id").value = "qr_" + Math.random().toString(36).substring(2, 8);
-
-    function switchTab(index) {
-      document.querySelectorAll('.tab-pane').forEach((pane, i) => {
-        pane.classList.toggle('active', i === index);
-      });
-      document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-        btn.classList.toggle('active', i === index);
-      });
-    }
-
-    function setQrType(type) {
-      currentType = type;
-      const dict = translations[currentLang] || translations.es;
-      document.getElementById('card-static').classList.toggle('selected', type === 'static');
-      document.getElementById('card-dynamic').classList.toggle('selected', type === 'dynamic');
-      document.getElementById('dynamic-options').style.display = type === 'dynamic' ? 'block' : 'none';
-      document.getElementById('preview-badge').innerText = type === 'dynamic' ? dict.badge_dynamic : dict.badge_static;
-      updateQR();
-    }
-
-    function toggleCategoryFields() {
-      const cat = document.getElementById("dynamic-category").value;
-      document.getElementById("cat-url-group").style.display = cat === "url" ? "block" : "none";
-      document.getElementById("cat-whatsapp-group").style.display = cat === "whatsapp" ? "block" : "none";
-      document.getElementById("cat-phone-group").style.display = cat === "phone" ? "block" : "none";
-      document.getElementById("cat-email-group").style.display = cat === "email" ? "block" : "none";
-      document.getElementById("cat-vcard-group").style.display = cat === "vcard" ? "block" : "none";
-    }
-
-    function getResolvedTargetUrl() {
-      const cat = document.getElementById("dynamic-category").value;
-      if (cat === "url") {
-        return document.getElementById("target-url").value.trim() || "https://ejemplo.com/mi-pagina";
-      } else if (cat === "whatsapp") {
-        const phone = document.getElementById("wa-phone").value.trim();
-        const msg = encodeURIComponent(document.getElementById("wa-msg").value);
-        return `https://wa.me/${phone}?text=${msg}`;
-      } else if (cat === "phone") {
-        const tel = document.getElementById("tel-number").value.trim();
-        return `tel:${tel}`;
-      } else if (cat === "email") {
-        const email = document.getElementById("email-addr").value.trim();
-        const sub = encodeURIComponent(document.getElementById("email-sub").value);
-        return `mailto:${email}?subject=${sub}`;
-      } else if (cat === "vcard") {
-        const name = document.getElementById("vc-name").value.trim();
-        const phone = document.getElementById("vc-phone").value.trim();
-        const email = document.getElementById("vc-email").value.trim();
-        return `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL:${phone}\nEMAIL:${email}\nEND:VCARD`;
-      }
-      return document.getElementById("target-url").value.trim() || "https://ejemplo.com/mi-pagina";
-    }
-
-    function toggleColorType() {
-      const type = document.getElementById("color-type").value;
-      document.getElementById("solid-color-group").style.display = type === "solid" ? "grid" : "none";
-      document.getElementById("gradient-color-group").style.display = type === "gradient" ? "block" : "none";
-    }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-    }
-
-    function handleLogo(event) {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          logoDataUrl = e.target.result;
-          updateQR();
-        };
-        reader.readAsDataURL(file);
+    const wifiEsc = s => s.replace(/([\\;,:"])/g, "\\$1");
+    function getTarget() {
+      const v = id => $(id).value.trim();
+      switch ($("dynamic-category").value) {
+        case "whatsapp": return `https://wa.me/${v("wa-phone").replace(/[^\d]/g, "")}?text=${encodeURIComponent($("wa-msg").value)}`;
+        case "phone": return `tel:${v("tel-number")}`;
+        case "email": return `mailto:${v("email-addr")}?subject=${encodeURIComponent($("email-sub").value)}`;
+        case "vcard": return `BEGIN:VCARD\nVERSION:3.0\nFN:${v("vc-name")}\nTEL:${v("vc-phone")}\nEMAIL:${v("vc-email")}\nEND:VCARD`;
+        case "wifi": return `WIFI:T:${$("wifi-sec").value};S:${wifiEsc(v("wifi-ssid"))};P:${wifiEsc($("wifi-pass").value)};;`;
+        case "sms": return `sms:${v("sms-phone")}?body=${encodeURIComponent($("sms-msg").value)}`;
+        case "geo": return `https://maps.google.com/?q=${encodeURIComponent(v("geo-lat") + "," + v("geo-lng"))}`;
+        case "text": return $("text-body").value || "Hola";
+        default: return v("target-url") || "https://ejemplo.com/mi-pagina";
       }
     }
-
-    window.addEventListener("DOMContentLoaded", async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const qrId = urlParams.get("r");
-
-      if (qrId) {
-        document.getElementById("app-view").style.display = "none";
-        document.getElementById("redirect-view").style.display = "flex";
-
-        try {
-          const response = await fetch(`${SCRIPT_URL}?action=get&id=${encodeURIComponent(qrId)}`);
-          const data = await response.json();
-
-          if (data.status === "success" && data.url) {
-            window.location.replace(data.url);
-          } else {
-            document.getElementById("redirect-status").innerText = "Código QR no registrado.";
-          }
-        } catch (err) {
-          document.getElementById("redirect-status").innerText = "Error de conexión.";
-        }
-      } else {
-        updateQR();
-      }
-    });
 
     function updateQR() {
-      const qrId = document.getElementById("qr-id").value.trim();
-      const colorType = document.getElementById("color-type").value;
-      const targetUrl = getResolvedTargetUrl();
-      
-      let finalData = targetUrl;
-      if (currentType === "dynamic" && qrId) {
-        finalData = `${BASE_GITHUB_URL}?r=${encodeURIComponent(qrId)}`;
-      }
-
-      let dotsConfig = {};
-      if (colorType === "solid") {
-        dotsConfig = {
-          color: document.getElementById("color-dots").value,
-          type: document.getElementById("dots-style").value
-        };
-      } else {
-        dotsConfig = {
-          type: document.getElementById("dots-style").value,
-          gradient: {
-            type: document.getElementById("grad-type").value,
-            rotation: 0,
-            colorStops: [
-              { offset: 0, color: document.getElementById("grad-color1").value },
-              { offset: 1, color: document.getElementById("grad-color2").value }
-            ]
-          }
-        };
-      }
-
+      const id = $("qr-id").value.trim();
+      const style = $("dots-style").value;
+      const dots = $("color-type").value === "solid"
+        ? { color: $("color-dots").value, type: style }
+        : { type: style, gradient: { type: $("grad-type").value, rotation: 0, colorStops: [
+            { offset: 0, color: $("grad-color1").value }, { offset: 1, color: $("grad-color2").value }] } };
       qrCode.update({
-        data: finalData,
-        dotsOptions: dotsConfig,
-        backgroundOptions: { color: document.getElementById("color-bg").value },
-        cornersSquareOptions: { type: document.getElementById("corner-square").value },
-        cornersDotOptions: { type: document.getElementById("corner-dot").value },
-        qrOptions: { errorCorrectionLevel: document.getElementById("ecc-level").value },
-        image: logoDataUrl,
+        data: S.type === "dynamic" && id ? `${BASE_URL}?r=${encodeURIComponent(id)}` : getTarget(),
+        dotsOptions: dots,
+        backgroundOptions: { color: $("color-bg").value },
+        cornersSquareOptions: { type: $("corner-square").value },
+        cornersDotOptions: { type: $("corner-dot").value },
+        qrOptions: { errorCorrectionLevel: $("ecc-level").value },
+        image: S.logo || undefined,
         imageOptions: { crossOrigin: "anonymous", margin: 6 }
       });
     }
 
+    function setQrType(type) {
+      S.type = type;
+      $("card-static").classList.toggle("selected", type === "static");
+      $("card-dynamic").classList.toggle("selected", type === "dynamic");
+      $("dynamic-options").style.display = type === "dynamic" ? "block" : "none";
+      $("preview-badge").innerText = type === "dynamic" ? t("badge_dynamic") : t("badge_static");
+      renderBanner(); updateQR();
+    }
+
+    // Descarga: se genera una copia al tamaño elegido (sin perder nitidez) con zona de silencio proporcional
+    async function downloadQR() {
+      const ext = $("dl-format").value, size = +$("dl-size").value;
+      const hq = new QRCodeStyling({
+        ...qrCode._options, width: size, height: size,
+        margin: Math.round(QR_MARGIN * size / PREVIEW_SIZE),
+        type: ext === "svg" ? "svg" : "canvas"
+      });
+      await hq.download({ name: "qr-" + ($("qr-id").value.trim() || "codigo"), extension: ext });
+    }
+
+    // ===== 6. PLANES, VIGENCIA Y PAGO =====
+    function renderPlans() {
+      const g = $("plan-grid");
+      g.textContent = "";
+      Object.entries(PLANS).forEach(([k, p]) => {
+        const c = document.createElement("div");
+        c.className = "type-card" + (S.buy === k ? " selected" : "");
+        c.onclick = () => setPlan(k);
+        const h = document.createElement("h4"); h.textContent = t("plan_" + k);
+        const pr = document.createElement("p"); pr.className = "plan-price"; pr.textContent = p.price.HNL ? `L ${p.price.HNL}${t("per_" + k)}` : "L 0";
+        const d = document.createElement("p"); d.textContent = t("plan_" + k + "_d");
+        const pp = document.createElement("p"); pp.textContent = p.price.USD ? `PayPal: $${p.price.USD}${t("per_" + k)}` : "";
+        c.append(h, pr, d, pp);
+        g.appendChild(c);
+      });
+      $("pay-actions").style.display = S.buy === "free" ? "none" : "block";
+    }
+    function setPlan(k) { S.buy = k; renderPlans(); }
+
+    function renderBanner() {
+      const b = $("plan-banner");
+      b.classList.remove("warn");
+      if (S.type !== "dynamic") { b.textContent = t("exp_none"); return; }
+      const exp = S.expires ? new Date(S.expires) : new Date(Date.now() + PLANS[S.plan].days * 864e5);
+      const left = Math.max(0, Math.ceil((exp - Date.now()) / 864e5));
+      b.textContent = `${t("plan_" + S.plan)} · ${t("exp_until")} ${exp.toLocaleDateString(S.lang)} (${left} ${t("exp_left")})` + (S.expires ? "" : ` — ${t("exp_est")}`);
+      if (S.plan === "free" || left <= 3) b.classList.add("warn");
+    }
+
+    async function payPlan(provider) {
+      const id = $("qr-id").value.trim(), email = $("recover-email").value.trim();
+      if (!EMAIL_RE.test(email)) { switchTab(0); return toast(t("err_email"), "err"); }
+      if (!(await saveAndGenerate())) return;
+      try {
+        const d = await api({ action: "pay", provider, id, plan: S.buy, key: ownerToken(id) });
+        if (d.status === "success" && d.url) window.location.href = d.url;
+        else toast(t("err_pay"), "err");
+      } catch (e) { toast(t("err_conn"), "err"); }
+    }
+
+    // ===== 7. BACKEND (Apps Script) =====
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Sin clave que escribir: cada navegador genera un token privado que identifica al dueño del QR.
+    // El backend lo asocia al ID en el primer guardado y solo acepta cambios con ese mismo token.
+    const mem = {};
+    function tokenMap() { try { return JSON.parse(localStorage.getItem("qr_tokens") || "{}"); } catch (e) { return mem; } }
+    function setOwnerToken(id, k) {
+      const m = tokenMap(); m[id] = k;
+      try { localStorage.setItem("qr_tokens", JSON.stringify(m)); } catch (e) { mem[id] = k; }
+    }
+    function ownerToken(id) {
+      let k = tokenMap()[id];
+      if (!k) { k = crypto.randomUUID() + crypto.randomUUID(); setOwnerToken(id, k); }
+      return k;
+    }
+    async function api(params) {
+      const r = await fetch(SCRIPT_URL + "?" + new URLSearchParams(params));
+      return r.json();
+    }
+
+    async function verifyPayment() {
+      try {
+        const d = await api({ action: "status", id: $("qr-id").value.trim() });
+        if (d.status === "success" && d.paid) {
+          S.expires = d.expires; if (d.plan && PLANS[d.plan]) S.plan = d.plan;
+          renderPlans(); renderBanner(); toast(t("pay_ok"));
+        } else toast(t("pay_pending"), "err");
+      } catch (e) { toast(t("err_conn"), "err"); }
+    }
+
     async function saveAndGenerate() {
-      const targetUrl = getResolvedTargetUrl();
-      const qrId = document.getElementById("qr-id").value.trim();
-      const adminKey = document.getElementById("admin-key").value.trim();
-
       updateQR();
-
-      if (currentType === "dynamic") {
-        if (!adminKey) return alert("Por favor ingresa tu clave de acceso autorizada.");
-        
-        const endpoint = `${SCRIPT_URL}?action=save&id=${encodeURIComponent(qrId)}&url=${encodeURIComponent(targetUrl)}&key=${encodeURIComponent(adminKey)}`;
-
-        try {
-          const res = await fetch(endpoint);
-          const data = await res.json();
-
-          if (data.status === "success") {
-            alert(`¡Éxito! Registro guardado correctamente.`);
-          } else {
-            alert("Error: Clave de acceso no autorizada.");
-          }
-        } catch (e) {
-          alert("Solicitud procesada correctamente.");
-        }
-      } else {
-        alert("¡Código QR preparado para descarga!");
-      }
+      if (S.type !== "dynamic") return toast(t("saved_static"));
+      const url = getTarget(), id = $("qr-id").value.trim(), key = ownerToken(id), email = $("recover-email").value.trim();
+      if ($("dynamic-category").value === "url" && !/^https?:\/\//i.test(url)) return toast(t("err_url"), "err");
+      if (email && !EMAIL_RE.test(email)) { switchTab(0); return toast(t("err_email"), "err"); }
+      const btn = $("save-btn"); btn.disabled = true; let ok = false;
+      try {
+        const d = await api({ action: "save", id, url, key, plan: S.plan, email });
+        if (d.status === "success") { if (PLANS[d.plan]) S.plan = d.plan; S.expires = d.expires || null; renderBanner(); toast(t("saved_ok")); ok = true; }
+        else if (d.status === "payment_required") toast(t("pay_pending"), "err");
+        else toast(t("err_key"), "err");
+      } catch (e) { toast(t("err_conn"), "err"); }
+      btn.disabled = false;
+      return ok;
     }
 
-    function downloadQR(ext) {
-      qrCode.download({ name: "codigo-qr", extension: ext });
+    // ===== 8. VISTA DE REDIRECCIÓN =====
+    function showMessage(text) {
+      document.querySelector(".spinner").style.display = "none";
+      $("redirect-status").textContent = text;
     }
+
+    function showLanding(p) {
+      document.querySelector(".spinner").style.display = "none";
+      $("redirect-status").style.display = "none";
+      const box = $("landing"); box.style.display = "block"; box.textContent = "";
+      const add = (tag, txt, cls) => { const e = document.createElement(tag); e.textContent = txt; if (cls) e.className = cls; box.appendChild(e); return e; };
+      const line = k => (p.match(new RegExp("^" + k + "[^:\\n]*:(.*)$", "mi")) || [])[1] || "";
+      const wf = k => ((p.match(new RegExp("(?:^|;)" + k + ":((?:\\\\.|[^;])*)")) || [])[1] || "").replace(/\\(.)/g, "$1");
+      if (/^BEGIN:VCARD/i.test(p)) {
+        add("h2", line("FN")); add("p", line("TEL")); add("p", line("EMAIL"));
+        add("button", t("vc_dl"), "btn-primary").onclick = () => {
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(new Blob([p], { type: "text/vcard" }));
+          a.download = "contacto.vcf"; a.click();
+        };
+      } else if (/^WIFI:/i.test(p)) {
+        add("h2", "📶 " + wf("S")); add("p", wf("P"));
+      } else add("p", p, "landing-text");
+    }
+
+    async function resolveRedirect(id) {
+      $("app-view").style.display = "none";
+      $("redirect-view").style.display = "flex";
+      try {
+        const d = await api({ action: "get", id });
+        if (d.status === "expired") {
+          const when = d.expires ? ` ${t("expired_d")} ${new Date(d.expires).toLocaleDateString(S.lang)}.` : "";
+          showMessage(t("expired_t") + "." + when);
+        } else if (d.status === "success" && d.url) {
+          // Solo se redirige a esquemas seguros; el resto se muestra como tarjeta (evita javascript:)
+          if (/^(https?:|tel:|mailto:|sms:|smsto:)/i.test(d.url)) window.location.replace(d.url);
+          else showLanding(d.url);
+        } else showMessage(t("not_found"));
+      } catch (e) { showMessage(t("err_conn")); }
+    }
+
+    // ===== 9. INICIO =====
+    function initUI(id) {
+      $("qr-id").value = id || "qr_" + crypto.randomUUID().slice(0, 8);
+      renderPlans(); renderBanner(); updateQR();
+    }
+
+    function fillTarget(u) {
+      const set = (cat, f) => { $("dynamic-category").value = cat; Object.entries(f).forEach(([k, v]) => $(k).value = v); };
+      if (/^tel:/i.test(u)) set("phone", { "tel-number": u.slice(4) });
+      else if (/^mailto:/i.test(u)) {
+        const [a, q] = u.slice(7).split("?");
+        set("email", { "email-addr": a, "email-sub": new URLSearchParams(q || "").get("subject") || "" });
+      } else if (/^https?:/i.test(u)) set("url", { "target-url": u });
+      else set("text", { "text-body": u });
+      toggleCategoryFields();
+    }
+
+    // Enlace de edición enviado por correo: ?edit=ID&k=TOKEN
+    async function loadForEdit(id, k) {
+      setOwnerToken(id, k);
+      history.replaceState(null, "", location.pathname); // quita el token de la barra de direcciones
+      initUI(id);
+      try {
+        const d = await api({ action: "load", id, key: k });
+        if (d.status !== "success") { toast(t("err_key"), "err"); return initUI(); }
+        if (PLANS[d.plan]) S.plan = d.plan;
+        S.expires = d.expires || null;
+        $("recover-email").value = d.email || "";
+        fillTarget(d.url || "");
+        renderPlans(); renderBanner(); updateQR(); toast(t("edit_loaded"));
+      } catch (e) { toast(t("err_conn"), "err"); }
+    }
+
+    // Regreso de la pasarela: el servidor confirma el pago con Tilopay/PayPal antes de activar el plan
+    async function finishPayment(params) {
+      history.replaceState(null, "", location.pathname);
+      initUI();
+      try {
+        const d = await api(params);
+        if (d.status !== "success") return toast(t("pay_pending"), "err");
+        const k = tokenMap()[d.id];
+        if (k) await loadForEdit(d.id, k);
+        else { S.plan = d.plan; S.expires = d.expires; renderBanner(); }
+        toast(t("pay_ok"));
+      } catch (e) { toast(t("err_conn"), "err"); }
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      const p = new URLSearchParams(location.search);
+      if (p.get("pp") && p.get("token")) return finishPayment({ action: "paypal_capture", order: p.get("token") });
+      if (p.get("tilopayLinkId")) return finishPayment({ action: "tilopay_confirm", link: p.get("tilopayLinkId"), order: p.get("orderNumber") || "" });
+      if (p.get("r")) return resolveRedirect(p.get("r"));
+      if (p.get("edit") && p.get("k")) return loadForEdit(p.get("edit"), p.get("k"));
+      initUI();
+    });
+
   </script>
 </body>
 </html>
+
